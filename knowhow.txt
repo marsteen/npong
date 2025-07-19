@@ -1,0 +1,7 @@
+
+Gimp: 
+    Gaußscher Weichzeichner: 8.0 in X und Y-Richtung
+
+
+Feld: 40x20
+Jedes Segment ist 48x48 Pixel gross

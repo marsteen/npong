@@ -1,0 +1,215 @@
+//***************************************************************************
+//
+//
+// @PROJECT  :	mvsnake
+// @VERSION  :	1.0
+// @FILENAME :	CSdlPong.h
+// @DATE     :	24.8.2024
+//
+// @AUTHOR   :	Martin Steen
+// @EMAIL    :	martin@martin-steen.de
+//
+//
+//***************************************************************************
+
+#ifndef CGLAPPLICATION_H
+#define CGLAPPLICATION_H
+
+#include <string>
+#include <vector>
+#include <list>
+
+#include <graflib/CGraflibPng.h>
+#include <cgl/CGL_Texture.h>
+#include <cgl/CGL_Patch2d.h>
+#include <cgl/CGL_SaveScreen.h>
+#include <pong/CSdlApp.h>
+#include <pong/CVectorShape.h>
+#include <pong/CVectorUnit.h>
+#include <pong/CEnemyUnit.h>
+#include <pong/CBaitUnit.h>
+#include <pong/CVectorShot.h>
+#include <pong/CExplosion.h>
+#include <pong/SGameContext.h>
+#include <pong/CPlayerUnit.h>
+#include <pong/CSdlSound.h>
+#include <pong/CDebrisUnit.h>
+#include <pong/CSprite.h>
+#include <pong/CPong.h>
+
+
+enum
+{
+    SOUND_EXPLO1,
+    SOUND_EXPLO2,
+    SOUND_SCHUSS,
+    SOUND_MUSIC
+};
+
+enum EGameStatus
+{
+    EGAMESTATUS_WAITING,    // Warten dass was passiert
+    EGAMESTATUS_GAMEOVER,   // Warten dass was passiert
+    EGAMESTATUS_PLAYING     // Spiel laeuft
+};
+
+class CSdlPong : public CSdlApp
+{
+    public:
+
+        CSdlPong();
+        ~CSdlPong();
+
+        void Draw3DObjects();
+        void Draw2DObjects();
+
+        //void ManageInterface(CGL_Mouse* Mouse);
+        bool ParseKeys(SDL_Keycode key, bool down) override;
+        void ParseMouseRel(float xrel, float yrel) override;
+        void JoystickButtonAction(int nr, int type, int jbutton) override;
+
+        void LeftMouseButtonDown();
+        void RightMouseButtonDown();
+        void LeftMouseButtonUp();
+        void RightMouseButtonUp();
+        void MouseWheel(int d);
+
+
+        void MouseMotion(int x, int y);
+        void MouseMotionLeft(int x, int y);
+        void MouseMotionRight(int x, int y);
+
+        bool mFullscreen;
+        void GameLoop() override;
+        void Timer() override;
+        void ResetPlayers() override;
+        void moveJoyAxis(int joystick, int axis, int axisValue) override;
+
+    protected:
+
+        void SetResolution(int w, int h) override;
+        void Zoom(float f);
+        void LoadEnvTexture(bool Anaglyph);
+        void InitGame();
+        void FinishGame();
+
+
+        const char* mActInfobox;
+        bool mInitFlag;
+        bool mShowInterface;
+
+
+        /*******************************************
+         *
+         * GAME
+         *
+         ********************************************/
+         
+         
+        void InitSprites();
+        void DrawPlayfield() const;
+		void DrawSpriteOnField(const CSprite& sprite, int x, int y) const;
+		void createNewBait();
+        void createNewBait(int nr);
+        
+        CSprite* snakeSprites[5];
+        CSprite spriteKopf1;
+        CSprite spriteKopf2;
+        CSprite spriteKopf3;
+        CSprite spriteKopf4;
+        CSprite spriteRumpf;
+        CSprite spriteWand;
+        CSprite spritePaddle;
+        CSprite spriteBall;
+        CSprite spriteFutter;
+		//uint8_t playfield[40][20];
+		CPong mSnake[2];
+		CVector2<int> mBait;
+
+		std::vector<CVector2<int>> mBaits;
+        int player0pos;
+        int player1pos;
+        int player0dir;
+        int player1dir;
+
+        int ballPosX;
+        int ballPosY;
+        int ballDirX;
+        int ballDirY;
+		
+        
+		//
+		// ALT:
+		//
+		
+        void InitEnemies();
+        void DrawEnemies();
+        void DrawDebris();
+        void TestInside();
+        void ParseSvg(std::string& SVGstr, CPolylineObject* poly, int Modifier);
+        void ReadShapes(const char* Filename);
+        void CalcPolyCenter(CPolylineObject* Poly);
+        CVectorShape* FindShape(const char* Shapename);
+        bool ShotHit(CVectorUnit* shot, std::vector<CVector2<float> >* explo);
+        void EnemyShotHit();
+        void NewAttackWave(bool Reset = false);
+        void NewDebris(float xpos, float ypos, int Fakt, const float* Color, const CVector2<float>& ddir);
+        void InitBait();
+        void RunPlayers();
+        void TestAvoid();
+        void TestEnemyShoot();
+        void StartGame();
+        void GotoWaitStatus();
+
+
+        void RemoveInactive(std::list<CVectorUnit*>& ul);
+        void ClearList(std::list<CVectorUnit*>& ulist);
+
+        void Shot(int Player);
+        void ShotEnemy(CVectorUnit* who);
+        void RunUnits();
+        bool TestCrash(CVectorUnit* vu);
+        bool TestPlayerCrash();
+        void DrawCenterPatch(CGL_Patch2d* pat);
+        void PlayerExplodes(int p);
+        void BonusScore();
+
+
+        void DrawUnitList(std::list<CVectorUnit*>& ulist, int HitStatus);
+        void DrawUnitPoints(std::list<CVectorUnit*>& ulist);
+        void DrawScore(int xpos, int Score, const float* Color);
+
+        void DrawCenterScore(int xpos, int Score, const float* Color);
+        void DrawLevel();
+        int Digits(int k);
+
+        void WriteHighScore();
+        void ReadHighScore();
+
+        SGameContext mGameContext;
+        EGameStatus mGameStatus;
+        CPlayerUnit mPlayer[2];
+        int mScore[2];
+        int mHighScore;
+        int mLevel;
+        std::list<CVectorUnit*> mUnitList;
+        std::list<CVectorUnit*> mBaitList;
+        std::list<CVectorUnit*> mShotList;
+        std::list<CVectorUnit*> mEnemyShotList;
+        std::list<CVectorUnit*> mExploList;
+        std::list<CVectorShape*> mShapeList;
+        std::list<CDebrisUnit*> mDebrisList;
+        bool mInitEnemies;
+        CVectorUnit mZiffern[10];
+        CGL_Patch2d mMainTex;                       // Titelbild-Textur
+        CGL_Patch2d mGameOverTex;                   // "Game Over"-Textur
+        CSdlSound mSdlSound;
+        int mGameOverTime;                          // Zeit fuer GameOver-Status
+        bool mExploded;
+        float mLevelDrawScale;                      // Scalierung der Levelanzeige
+        int mLevelDrawWait;                         // Verzoegerung fuer Levelanzeige
+        CGL_SaveScreen mSaveScreenGL;               // Bildschirm abspeichern
+        bool mScreenSaveMode;
+};
+
+#endif
