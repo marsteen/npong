@@ -203,13 +203,6 @@ extern void GlobalShowOpenGLError(void);
 bool CGL_Texture::LoadTexture(const char* TextureFilename, STextureParams* tp)
 {
     //cout << "CGL_Texture::LoadTexture START file" << TextureFilename << endl;
-    char func[256];
-
-    sprintf(func, "%s 0001", __func__);
-    GlobalShowOpenGLError(func);
-    GlobalDebug("CGL_Texture::LoadTexture START", 2);
-    GlobalDebug(TextureFilename);
-
     CGraflib* Graflib;
     CFileIO fio;
     bool Status = false;
@@ -218,22 +211,10 @@ bool CGL_Texture::LoadTexture(const char* TextureFilename, STextureParams* tp)
 
     switch (fio.GuessFileFormat(TextureFilename))
     {
-#ifdef USE_JPEG
-        case EFILETYPE_JPG:
-
-            // Debug2 << "JPG FILE" << DBLF;
-            Graflib = new CGraflibJpeg;
-            break;
-#endif
-
-#if 1
         case EFILETYPE_PNG:
 
-            GlobalDebug("EFILETYPE_PNG START", 2);
             Graflib = new CGraflibPng;
-            GlobalDebug("EFILETYPE_PNG OK", 2);
             break;
-#endif
 
         case EFILETYPE_TGA:
 
@@ -242,13 +223,9 @@ bool CGL_Texture::LoadTexture(const char* TextureFilename, STextureParams* tp)
             break;
 
         default:
-        {
-            stringstream mstr;
-            mstr << __func__ << ": Unbekanntes Grafikformat: "  << TextureFilename;
-            GlobalShowError(mstr);
+            std::cout << "***** CGL_Texture::LoadTexture unknown format:" << TextureFilename << std::endl;
+            break;
         }
-        break;
-    }
 
     GlobalDebug("Reading..");
 
@@ -259,7 +236,7 @@ bool CGL_Texture::LoadTexture(const char* TextureFilename, STextureParams* tp)
     catch (CGraflibException& ex)
     {
         stringstream mstr;
-        cout <<  "***** Datei nicht gefunden: " <<  TextureFilename << endl;
+        std::cout  <<  "***** Datei nicht gefunden: " <<  TextureFilename << std::endl;
         mTexHandle = 0;
         exit(0);
     }
@@ -270,9 +247,9 @@ bool CGL_Texture::LoadTexture(const char* TextureFilename, STextureParams* tp)
         stringstream mstr;
 
         cout << "Filename=" << TextureFilename << endl;
-        cout << "Graflib->mBits=" << Graflib->mBits << endl;
-        cout << "W=" << Graflib->mWidth << " H=" << Graflib->mHeight << endl;
-        cout << "mCreateMipmap=" << tp->mCreateMipmap << endl;
+        cout << "    Graflib->mBits=" << Graflib->mBits << endl;
+        cout << "    W=" << Graflib->mWidth << " H=" << Graflib->mHeight << endl;
+        cout << "    mCreateMipmap=" << tp->mCreateMipmap << endl;
         //GlobalDebug(mstr);
     }
 

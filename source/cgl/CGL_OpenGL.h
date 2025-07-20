@@ -22,7 +22,6 @@ class CGL_OpenGL
         void SetViewport(int w, int h);
         void StartModelView();
         void StartProjectionView();
-        void StartProjectionView(int Width, int Height) const;
         void SetupLighting();
 
     protected:

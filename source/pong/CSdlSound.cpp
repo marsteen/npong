@@ -266,14 +266,17 @@ int CSdlSound::LoadWav(const char* WavFilename)
 
 void CSdlSound::PlayWav(int n)
 {
-    SPlaySound PlaySound;
+    if (n >= 0)
+    {
+        SPlaySound PlaySound;
 
-    PlaySound.mAudioPos = mSounds[n]->mWavBuffer;
-    PlaySound.mAudioLen = mSounds[n]->mWavLength;
+        PlaySound.mAudioPos = mSounds[n]->mWavBuffer;
+        PlaySound.mAudioLen = mSounds[n]->mWavLength;
 
-    SDL_LockAudio();
-    mPlaySoundsList.push_back(PlaySound);
-    SDL_UnlockAudio();
+        SDL_LockAudio();
+        mPlaySoundsList.push_back(PlaySound);
+        SDL_UnlockAudio();
+    }
 
     //cout << "Sounds=" << mPlaySoundsList.size() << endl;
 }

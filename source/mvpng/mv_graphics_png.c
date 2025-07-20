@@ -14,6 +14,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
 
 #include <png.h>
 #include <mvpng/mv_graphics_png.h>
@@ -65,20 +66,20 @@ int mv_graphics_png_read(const char* png_file, char** png_data, int* png_width, 
     fp = fopen (png_file, "rb");
     if (!fp)
     {
+        printf ("***** mv_graphics_png_read: Cannot open '%s': %s\n", png_file, strerror (errno));
         return 0;
-        //fatal_error ("Cannot open '%s': %s\n", png_file, strerror (errno));
     }
     png_ptr = png_create_read_struct (PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
     if (!png_ptr)
     {
+        printf ("***** mv_graphics_png_read: Cannot create PNG read structure");
         return 0;
-        //fatal_error ("Cannot create PNG read structure");
     }
     info_ptr = png_create_info_struct (png_ptr);
     if (!png_ptr)
     {
+        printf ("***** mv_graphics_png_read: Cannot create PNG info structure");
         return 0;
-        //fatal_error ("Cannot create PNG info structure");
     }
     fseek(fp, file_offset, SEEK_SET);
 
@@ -91,6 +92,8 @@ int mv_graphics_png_read(const char* png_file, char** png_data, int* png_width, 
     int rowbytes;
     rowbytes = png_get_rowbytes(png_ptr, info_ptr);
 
+
+#define DEBUG_OUTPUT
 #ifdef DEBUG_OUTPUT
     printf ("Width is %d, height is %d\n", width, height);
     printf("Row bytes = %d\n", rowbytes);

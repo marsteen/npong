@@ -27,8 +27,8 @@ void CSprite::draw(float posx, float posy, const float& scale) const
 	glEnable(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, mTexture.mTexHandle);
     
-    CVector2<float> offpos(posx + mOffset.x, posy + mOffset.y);
+    CVector2<float> offpos(posx - mBorders.left * scale, posy - mBorders.top * scale);
     
-    CRectT<float> vrc(offpos.x * scale, offpos.y * scale, (offpos.x + mTexture.mTexWidth) * scale, (offpos.y + mTexture.mTexHeight) * scale);
+    CRectT<float> vrc(offpos.x, offpos.y, offpos.x + mTexture.mTexWidth * scale, offpos.y + mTexture.mTexHeight * scale);
     NGLprimitives::DrawTexture(&vrc);
 }

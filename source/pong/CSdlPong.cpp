@@ -58,7 +58,7 @@ const float colorCyan[]   = { 0.0f, 1.0f, 1.0f, 1.0f };
 const float colorGreen[]  = { 0.2f, 1.0f, 0.2f, 1.0f };
 const float colorWhite[]  = { 1.0f, 1.0f, 1.0f, 1.0f };
 const float colorYellow[] = { 1.0f, 1.0f, 0.0f, 1.0f };
-const float colorGrey[]   = { 1.0f, 1.0f, 1.0f, 0.5f };
+const float colorGrey[]   = { 0.5f, 0.5f, 0.5f, 1.0f };
 
 // ---------------------------------------------------------------------------
 //
@@ -85,14 +85,12 @@ CSdlPong::CSdlPong()
     mScreenSaveMode = false;
 	mBait.Set(20, 10);
 
-    player0pos = 400;
-    player1pos = 400;
     player0dir = 0;
     player1dir = 0;
 
 //    ballPosX = 400;
 //    ballPosY = 480 - 64;
-    ballPosX = 0;
+
     
 
 
@@ -128,15 +126,22 @@ void CSdlPong::InitSprites()
 
     spritePaddle.load("files/bilder/paddle-b.png");
     spriteBall.load("files/bilder/ball-b.png");
+    spriteDivider.load("files/bilder/divider-b.png");
 
-    spritePaddle.mOffset.y = -32;
-    ballPosY = (1080 / 2) - spriteBall.height() / 2;
+    spritePaddle.mBorders.top = 32;
+    spritePaddle.mBorders.bottom = 32;
+    ballPosX = mGameContext.mPlayField.Width() / 2 - spriteBall.logicalWidth() / 2;
+    ballPosY = mGameContext.mPlayField.Height() / 2 - spriteBall.logicalHeight() / 2;
+    ballDirX = 6.0f;
+    ballDirY = 6.0f;
 
-	snakeSprites[0] = &spriteKopf1;
-	snakeSprites[1] = &spriteKopf2;
-	snakeSprites[2] = &spriteKopf3;
-	snakeSprites[3] = &spriteKopf4;
-	snakeSprites[4] = &spriteRumpf;
+    const int distPaddleToWall = 100;
+    const int startPosY = (mGameContext.mPlayField.Height() / 2) - spritePaddle.logicalHeight() / 2;
+    player0posX = distPaddleToWall;
+    player0posY = startPosY;
+    player1posX = mGameContext.mPlayField.Width() - spritePaddle.logicalWidth() - distPaddleToWall;    
+    player1posY = startPosY;
+
 }
 
 // ---------------------------------------------------------------------------
@@ -173,9 +178,11 @@ void CSdlPong::InitGame()
     //SDL_WM_SetCaption("Thieves", "Thieves");
     //SDL_WM_SetIcon(SDL_LoadBMP("files/icon.bmp"), NULL);
 
-    mSdlSound.LoadWav("files/sounds/run1.wav");
-    mSdlSound.LoadWav("files/sounds/run2.wav");
-    mSdlSound.LoadWav("files/sounds/bait.wav");
+
+    soundBleep0 = mSdlSound.LoadWav("files/sounds/bleep0.wav");
+    soundBleep1 = mSdlSound.LoadWav("files/sounds/bleep1.wav");
+    soundBleep2 = mSdlSound.LoadWav("files/sounds/bleep2.wav");
+
 
     // mSdlSound.LoadWav("files/sounds/explosion1.wav");
     // mSdlSound.LoadWav("files/sounds/explosion2.wav");
@@ -198,7 +205,7 @@ void CSdlPong::InitGame()
 
     tp.mMinFilter = GL_NEAREST;
     tp.mMagFilter = GL_NEAREST;
-    mMainTex.LoadTexture(GlobalSystem::getPath("files/snake.tga").c_str(), nullptr);
+    mLogoTex.LoadTexture(GlobalSystem::getPath("files/bilder/bs-logo.png").c_str(), nullptr);
     mGameOverTex.LoadTexture(GlobalSystem::getPath("files/gameover.tga").c_str(), nullptr);
     ReadHighScore();
 
@@ -228,7 +235,7 @@ void CSdlPong::FinishGame()
 // ---------------------------------------------------------------------------
 //
 // KLASSE        : CSdlPong
-// METHODE       :
+// METHODE       : SetResolution
 //
 //
 //
@@ -487,7 +494,7 @@ void CSdlPong::RightMouseButtonDown()
 // ---------------------------------------------------------------------------
 //
 // KLASSE        : CSdlPong
-// METHODE       : GameLoop
+// METHODE       : CheckIfPlayerHitsBall
 //
 //
 //
@@ -499,7 +506,27 @@ void CSdlPong::RightMouseButtonDown()
 //#define USE_FB
 
 
+bool CSdlPong::CheckIfPlayerHitsBall(const int& playerPosX, const int& playerPosY) const
+{
+    if (ballPosX + spritePaddle.logicalWidth() > playerPosX && 
+        ballPosX < playerPosX + spritePaddle.logicalWidth())
+    {
+        if ((playerPosY < ballPosY) && (playerPosY + spritePaddle.logicalHeight() > ballPosY + spriteBall.logicalHeight() / 2))
+        {            
+            return true;
+        }
+    }
+    return false;
+}
 
+// ---------------------------------------------------------------------------
+//
+// KLASSE        : CSdlPong
+// METHODE       : GameLoop
+//
+//
+//
+// ---------------------------------------------------------------------------
 
 void CSdlPong::GameLoop()
 {
@@ -524,7 +551,7 @@ void CSdlPong::GameLoop()
     }
 #endif
 
-    mGameContext.mPlayField.Set(0, 0, mXres, mYres);
+    mGameContext.mPlayField.Set(0, 0, mScale * mXres, mScale * mYres);
 
 #ifdef USE_FB
     StaticFramebufferObject->DrawToFrameBuffer(true);
@@ -537,9 +564,70 @@ void CSdlPong::GameLoop()
     StaticFramebufferObject->DrawTexture(mXres, mYres);
 #endif
 
-    player0pos += player0dir;
-    player1pos += player1dir;
+    player0posY += player0dir;
+    player1posY += player1dir;
 
+    const int maxY = mGameContext.mPlayField.Height() - spritePaddle.logicalHeight();
+    if (player0posY < 0) player0posY = 0;
+    if (player0posY > maxY) player0posY = maxY;
+    if (player1posY < 0) player1posY = 0;
+    if (player1posY > maxY) player1posY = maxY;
+
+
+
+    static int dc = 0;
+    bool moveValid = true;
+    
+    int newBallPosX = ballPosX + ballDirX;
+    int newBallPosY = ballPosY + ballDirY;
+
+
+
+    if (dc > 0)
+    {
+        dc--;
+    }
+    else
+    {
+        if ((ballPosX < 0) || (ballPosX + spriteBall.logicalWidth() > mGameContext.mPlayField.Width()))
+        {
+            mSdlSound.PlayWav(soundBleep2);
+            ballDirX = -ballDirX;
+            moveValid = false;
+            dc = 10;
+        }
+        if ((ballPosY < 0) || (ballPosY + spriteBall.logicalHeight() > mGameContext.mPlayField.Height()))
+        {
+            mSdlSound.PlayWav(soundBleep2);
+            ballDirY = -ballDirY;
+            moveValid = false;
+            dc = 10;
+        }
+
+
+        if (CheckIfPlayerHitsBall(player0posX, player0posY))
+        {
+            mSdlSound.PlayWav(soundBleep0);
+            ballDirX = -ballDirX * 1.05;
+            moveValid = false;
+            dc = 10;                        
+        }
+        else
+        if (CheckIfPlayerHitsBall(player1posX, player1posY))
+        {
+            mSdlSound.PlayWav(soundBleep1);
+            ballDirX = -ballDirX * 1.05;
+            moveValid = false;
+            dc = 10;            
+        }
+    }
+
+
+    if (moveValid)
+    {
+        ballPosX = newBallPosX;
+        ballPosY = newBallPosY;
+    }
 
     SDL_GL_SwapWindow(mWindow);
 }
@@ -558,22 +646,19 @@ void CSdlPong::DrawCenterPatch(CGL_Patch2d* pat)
 {
 
 
-    //cout << "mGameContext.mPlayField.Width()=" << mGameContext.mPlayField.Width() << endl;
-    //cout << "mGameContext.mPlayField.Height()=" << mGameContext.mPlayField.Height() << endl;
+    //cout << "mGameContext.mPlayField.Width()=" << mGameContext.mPlayField.Width()
+    //     << " mGameContext.mPlayField.Height()=" << mGameContext.mPlayField.Height() << " scale=" << mScale << endl;
     const float zspeed = 1.0003f;
     static float nx = 1.0f;
     static float nd = zspeed;
 
-
-    const float Scale = gGlobalScale * nx;
-
     float ox = 0;
     float oy = 0;
 
-    glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-    pat->mPos.x = (mGameContext.mPlayField.Width() / 2) - (pat->mWidth / 2 * Scale) + ox;
-    pat->mPos.y = (mGameContext.mPlayField.Height() / 2)- (pat->mHeight / 2 * Scale) + oy;
-    pat->DrawScaled(Scale);
+    glColor4f(1.0f, 1.0f, 1.0f, 0.5f);
+    pat->mPos.x = (mGameContext.mPlayField.Width()  / 2) - (pat->mWidth / 2) + ox;
+    pat->mPos.y = (mGameContext.mPlayField.Height() / 2) - (pat->mHeight / 2) + oy;
+    pat->DrawScaled(1.0f);
 
     nx *= nd;
     if (nx > 1.5f)
@@ -668,7 +753,7 @@ void CSdlPong::ReadHighScore()
 
 void CSdlPong::DrawSpriteOnField(const CSprite& sprite, int x, int y) const
 {
-	sprite.draw(x * 40, (21-y) * 40, mScale);
+	sprite.draw(x * 48, (21-y) * 48, 1.0f);
     
     
 }
@@ -783,37 +868,17 @@ void CSdlPong::JoystickButtonAction(int nr, int type, int jbutton)
 
 void CSdlPong::DrawPlayfield() const
 {
-	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-    glColor4fv(colorGrey);
-	for (int x = 0; x < FIELD_SIZE_X; x++)
-	{
-		DrawSpriteOnField(spriteWand, x, 0);
-		DrawSpriteOnField(spriteWand, x, FIELD_SIZE_Y-1);
-    }
-	for (int y = 1; y < FIELD_SIZE_Y-1; y++)
-	{
-		DrawSpriteOnField(spriteWand,  0, y);
-		DrawSpriteOnField(spriteWand, FIELD_SIZE_X-1, y);
-	}
+    
+
+    // mGameContext.mPlayField.Width()=" << mGameContext.mPlayField.Width()
+    //     << " mGameContext.mPlayField.Height(
+
+
+
     glColor4fv(colorWhite);
-    spritePaddle.draw(100, player0pos, mScale);
-    spritePaddle.draw(1600 - 140, player1pos, mScale);
-
-    spriteBall.draw(ballPosX, ballPosY, mScale);
-
-// 	mSnake[0].draw(snakeSprites, mScale);
-//     mSnake[1].draw(snakeSprites, mScale);
-	
-//     glColor4fv(colorYellow);
-// //	DrawSpriteOnField(spriteFutter, mBait.x, mBait.y);
-
-//     for (auto bait = mBaits.begin(); bait != mBaits.end(); ++bait)
-//     {
-//     	DrawSpriteOnField(spriteFutter, bait->x, bait->y);    
-//     }
-
-
-	// ,,
+    spritePaddle.draw(player0posX, player0posY, 1.0);
+    spritePaddle.draw(player1posX, player1posY, 1.0);
+    spriteBall.draw(ballPosX, ballPosY, 1.0);
 }
 
 
@@ -836,20 +901,33 @@ void CSdlPong::Draw2DObjects()
 	    	InitSprites();
 	    	initOpenGL = true;
 	    }
+        //cout << " xres=" << mXres << " yres=" << mYres << " Scale=" << mScale << endl;
     
     
         mOpenGL.StartProjectionView();
 
         glClear(GL_COLOR_BUFFER_BIT);
         glEnable(GL_BLEND);
-        //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+        
+		
+
+
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glColor4fv(colorGrey);
+        int yd = 0;
+        const float scale = 0.242f;
+        const int xd = mGameContext.mPlayField.Width() / 2 - (spritePaddle.logicalWidth() / 2) * scale;
+        while (yd < mGameContext.mPlayField.Height())
+        {
+            spritePaddle.draw(xd, yd, scale);
+            yd += spritePaddle.logicalHeight() * scale * 2.0f;
+        }
+
+        //DrawCenterPatch(&mLogoTex);
+
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 		DrawPlayfield();
 
-        if (mGameStatus == EGAMESTATUS_WAITING)
-        {
-            DrawCenterPatch(&mMainTex);
-        }
 
         glDisable(GL_BLEND);
     }

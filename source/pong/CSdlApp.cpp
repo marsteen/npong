@@ -50,7 +50,7 @@ CSdlApp::CSdlApp()
     mAxis0 = 0.0f;
     mAxis1 = 0.0f;
 
-    mUserParamScale = 1.0;
+    mScale = 1.0f;
 }
 
 // ---------------------------------------------------------------------------
@@ -70,20 +70,20 @@ void CSdlApp::ParseArgVec(const vector<string>& ArgStr)
     {
         if (ArgStr[i] == "-scale")
         {
-            mUserParamScale = st.StringTo<float>(ArgStr[i+1]);
+            mScale = st.StringTo<float>(ArgStr[i+1]);
         }
         else
         if (ArgStr[i] == "-version")
         {
-            cout << "Version: VERSION_STRING" << endl;
+            cout << "Version:" << VERSION_STRING << endl;
             exit(0);
         }
         else
         if (ArgStr[i] == "-help")
         {
             cout << "********************************************************" << endl;
-            cout << "SNAKE" << endl;
-            cout << "written 2024 by Martin Steen" << endl;
+            cout << "NPONG" << endl;
+            cout << "written 2025 by Martin Steen" << endl;
             cout << "commandline options:" << endl;
             cout << "  -scale <float>: change scale" << endl;
             cout << "Version: " << VERSION_STRING << endl;
@@ -446,7 +446,6 @@ bool CSdlApp::InitScreen() //int xres, int yres, int Bits)
     SDL_GetCurrentDisplayMode(0, &dm);
     mXres = dm.w;
     mYres = dm.h;
-    mScale = float(mXres) / 1920;
 
     const int windowFlags = SDL_WINDOW_OPENGL | SDL_WINDOW_FULLSCREEN;
 
@@ -456,25 +455,43 @@ bool CSdlApp::InitScreen() //int xres, int yres, int Bits)
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
     SDL_GL_SetSwapInterval(1);
 
-    mWindow = SDL_CreateWindow("snake", 0, 0, mXres, mYres, windowFlags);
+    mWindow = SDL_CreateWindow("npong", 0, 0, mXres, mYres, windowFlags);
+    SDL_GLContext maincontext = SDL_GL_CreateContext(mWindow);
+
+    int w, h;
+    SDL_GetWindowSize(mWindow, &w, &h);
+    std::cout << "SDL_GetWindowSize w=" << w << " h=" << h << std::endl;
+
+    //SDL_GL_GetDrawableSize(mWindow, &w, &h);
+    //std::cout << "SDL_GL_GetDrawableSize w=" << w << " h=" << h << std::endl;   
+    
+
+
     if (mWindow == nullptr)
     {
         cout << "***** SDL_CreateWindow failed" << endl;
     }
 
-    SDL_GLContext maincontext = SDL_GL_CreateContext(mWindow);
-
-
-    if (mUserParamScale != 1.0)
-    {
-        mXres  *= mUserParamScale;
-        mYres  *= mUserParamScale;
-        mScale *= mUserParamScale;
-    }
 
     SetResolution(mXres, mYres);
 
     InitOpenGL(mXres, mYres);
+
+    // {
+    //     SDL_Renderer* renderer = SDL_GetRenderer(mWindow);
+    //     if (renderer == nullptr)
+    //     {
+    //         std::cout << "***** SDL_GetRenderer is null" << std::endl;
+    //     }
+    //     float sx = 0, sy = 0;
+    //     SDL_RenderGetScale(renderer, &sx, &sy);
+    //     std::cout << "SDL_RenderGetScale sx=" << sx << " sy=" << sy << std::endl;
+
+
+    //     w = 0; h = 0;        
+    //     SDL_GetRendererOutputSize(renderer, &w, &h);
+    //     std::cout << "SDL_GetRendererOutputSize w=" << w << " h=" << h << std::endl;
+    // }
 
     InitGame();
     InitJoysticks();

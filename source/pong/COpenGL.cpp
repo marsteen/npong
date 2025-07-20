@@ -110,7 +110,6 @@ void COpenGL::StartProjectionView()
     glViewport(0, 0, mWidth, mHeight);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    //gluOrtho2D(0.0, mWidth, 0.0, mHeight);
 
     glOrtho(0.0, mWidth, 0.0, mHeight, -1.0, 1.0);
 

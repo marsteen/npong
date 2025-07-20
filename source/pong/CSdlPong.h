@@ -111,6 +111,7 @@ class CSdlPong : public CSdlApp
 		void DrawSpriteOnField(const CSprite& sprite, int x, int y) const;
 		void createNewBait();
         void createNewBait(int nr);
+        bool CheckIfPlayerHitsBall(const int& playerPosX, const int& playerPosY) const;
         
         CSprite* snakeSprites[5];
         CSprite spriteKopf1;
@@ -120,6 +121,7 @@ class CSdlPong : public CSdlApp
         CSprite spriteRumpf;
         CSprite spriteWand;
         CSprite spritePaddle;
+        CSprite spriteDivider;
         CSprite spriteBall;
         CSprite spriteFutter;
 		//uint8_t playfield[40][20];
@@ -127,8 +129,10 @@ class CSdlPong : public CSdlApp
 		CVector2<int> mBait;
 
 		std::vector<CVector2<int>> mBaits;
-        int player0pos;
-        int player1pos;
+        int player0posX;
+        int player0posY;
+        int player1posX;
+        int player1posY;
         int player0dir;
         int player1dir;
 
@@ -136,6 +140,10 @@ class CSdlPong : public CSdlApp
         int ballPosY;
         int ballDirX;
         int ballDirY;
+
+        int soundBleep0;
+        int soundBleep1;
+        int soundBleep2;
 		
         
 		//
@@ -201,7 +209,7 @@ class CSdlPong : public CSdlApp
         std::list<CDebrisUnit*> mDebrisList;
         bool mInitEnemies;
         CVectorUnit mZiffern[10];
-        CGL_Patch2d mMainTex;                       // Titelbild-Textur
+        CGL_Patch2d mLogoTex;                       // Titelbild-Textur
         CGL_Patch2d mGameOverTex;                   // "Game Over"-Textur
         CSdlSound mSdlSound;
         int mGameOverTime;                          // Zeit fuer GameOver-Status

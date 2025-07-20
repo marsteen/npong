@@ -55,16 +55,18 @@ void CGL_OpenGL::SetViewport(int w, int h)
 
     //SetupLighting();
 
-    glViewport(0, 0, mWidth, mHeight);
-    mAspect = (float)mWidth / (mHeight);
+	cout << "CGL_OpenGL::SetViewport w=" << mWidth << " h=" << mHeight << endl;
+
+    glViewport(0, 0, mWidth * 1.6, mHeight * 1.6);
+    mAspect = (float) mWidth / (mHeight);
     //StartModelView();
 
     glClearColor(0.0f, 0.0f, 0.05f, 0.0f);
     //glClear(GL_COLOR_BUFFER_BIT);
 
-    glEnable(GL_CULL_FACE);
-    glEnable(GL_DEPTH_TEST);
-    glCullFace(GL_BACK);
+//    glEnable(GL_CULL_FACE);
+//    glEnable(GL_DEPTH_TEST);
+//    glCullFace(GL_BACK);
     //ViewportAction(w, h);
 }
 
@@ -111,11 +113,10 @@ void CGL_OpenGL::StartProjectionView()
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
 
-    glOrtho(0.0, mWidth, 0.0, mHeight, -1.0, 1.0);
+    glOrtho(0.0, 1920, 0.0, 1080, -1.0, 1.0);
+    
 
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
-
+    
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_LIGHTING);
 }
@@ -129,22 +130,22 @@ void CGL_OpenGL::StartProjectionView()
 //
 //---------------------------------------------------------------------------
 
-void CGL_OpenGL::StartProjectionView(int Width, int Height) const
-{
-    glViewport(0, 0, mWidth, mHeight);
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-
-
-    glOrtho(0.0, Width, 0.0, Height, -1.0, 1.0);
-
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
-
-    glDisable(GL_DEPTH_TEST);
-    glDisable(GL_LIGHTING);
-}
-
+//void CGL_OpenGL::StartProjectionView(int Width, int Height) const
+//{
+//    glViewport(0, 0, mWidth, mHeight);
+//    glMatrixMode(GL_PROJECTION);
+//    glLoadIdentity();
+//
+//
+//    glOrtho(0.0, Width, 0.0, Height, -1.0, 1.0);
+//
+//    glMatrixMode(GL_MODELVIEW);
+//    glLoadIdentity();
+//
+//    glDisable(GL_DEPTH_TEST);
+//    glDisable(GL_LIGHTING);
+//}
+//
 
 //
 
