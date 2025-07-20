@@ -114,6 +114,7 @@ class CSdlPong : public CSdlApp
         bool CheckIfPlayerHitsBall(const int& playerPosX, const int& playerPosY) const;
         void ResetBall();
         void GameStatusPlaying();
+        void AutoPlayer();
         
         CSprite spriteDigit[10];
         CSprite spritePaddle;
@@ -129,6 +130,7 @@ class CSdlPong : public CSdlApp
         int player1posY;
         int player0dir;
         int player1dir;
+        int playerSpeed;
 
         int ballPosX;
         int ballPosY;

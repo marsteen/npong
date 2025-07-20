@@ -135,8 +135,8 @@ void CSdlPong::ResetBall()
     ballPosY = mGameContext.mPlayField.Height() / 2 - spriteBall.logicalHeight() / 2;
     
 
-    ballDirX = 6.0f;
-    ballDirY = 6.0f;
+    ballDirX = 8.0f;
+    ballDirY = 8.0f;
 
     const int distPaddleToWall = 100;
     const int startPosY = (mGameContext.mPlayField.Height() / 2) - spritePaddle.logicalHeight() / 2;
@@ -144,9 +144,11 @@ void CSdlPong::ResetBall()
     player0posY = startPosY;
     player1posX = mGameContext.mPlayField.Width() - spritePaddle.logicalWidth() - distPaddleToWall;    
     player1posY = startPosY;
+    playerSpeed = 15;
 
     mGameStatus = EGAMESTATUS_WAITING;
     mWaitCounter = 30;
+
 }
 
 // ---------------------------------------------------------------------------
@@ -291,18 +293,18 @@ void CSdlPong::moveJoyAxis(int joystick, int axis, int axisValue)
         {
             if (axisValue > 0)
             {
-                dir = -10;
+                dir = -playerSpeed;
             }
             else
             {
-                dir = 10;
+                dir = playerSpeed;
             }
         }
     }
     switch (joystick)
     {
         case 0:  player0dir = dir; break;
-        case 1:  player1dir = dir;; break;
+        //case 1:  player1dir = dir;; break;
     }    
 }
 
@@ -486,7 +488,8 @@ bool CSdlPong::CheckIfPlayerHitsBall(const int& playerPosX, const int& playerPos
     if (ballPosX + spritePaddle.logicalWidth() > playerPosX && 
         ballPosX < playerPosX + spritePaddle.logicalWidth())
     {
-        if ((playerPosY < ballPosY) && (playerPosY + spritePaddle.logicalHeight() > ballPosY + spriteBall.logicalHeight() / 2))
+        if ((playerPosY < ballPosY + spriteBall.logicalHeight()) && 
+            (playerPosY + spritePaddle.logicalHeight() > ballPosY))
         {            
             return true;
         }
@@ -533,7 +536,7 @@ void CSdlPong::GameStatusPlaying()
         
         if ((ballPosY < 0) || (ballPosY + spriteBall.logicalHeight() > mGameContext.mPlayField.Height()))
         {
-            //mSdlSound.PlayWav(soundBleep2);
+            mSdlSound.PlayWav(soundBleep2);
             ballDirY = -ballDirY;
             moveValid = false;
             dc = 10;
@@ -543,7 +546,8 @@ void CSdlPong::GameStatusPlaying()
         if (CheckIfPlayerHitsBall(player0posX, player0posY))
         {
             mSdlSound.PlayWav(soundBleep0);
-            ballDirX = -ballDirX * 1.05;
+            ballDirX = -ballDirX * 1.15f;
+            ballDirY *= 1.15f;
             moveValid = false;
             dc = 10;                        
         }
@@ -551,7 +555,8 @@ void CSdlPong::GameStatusPlaying()
         if (CheckIfPlayerHitsBall(player1posX, player1posY))
         {
             mSdlSound.PlayWav(soundBleep1);
-            ballDirX = -ballDirX * 1.05;
+            ballDirX = -ballDirX * 1.15f;
+            ballDirY *= 1.15f;
             moveValid = false;
             dc = 10;            
         }
@@ -609,6 +614,8 @@ void CSdlPong::GameLoop()
     StaticFramebufferObject->DrawTexture(mXres, mYres);
 #endif
 
+    AutoPlayer();
+
     player0posY += player0dir;
     player1posY += player1dir;
 
@@ -632,6 +639,8 @@ void CSdlPong::GameLoop()
             break;
 
     }
+
+
 
 
 
@@ -792,9 +801,13 @@ void CSdlPong::JoystickButtonAction(int nr, int type, int jbutton)
 
 void CSdlPong::AutoPlayer()
 {
-    if (),,
-
-
+    player1dir = 0;
+    int ballMiddleY = ballPosY + spriteBall.logicalHeight() / 2;
+    int paddleMiddleY = player1posY + spritePaddle.logicalHeight() / 2;
+    if (ballPosY < player1posY - 5) player1dir = -playerSpeed;
+    else
+    if (ballPosY > player1posY + 5) player1dir = playerSpeed;
+    
 }
 
 
