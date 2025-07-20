@@ -111,7 +111,7 @@ namespace NGLprimitives
     {
         CRectT<float> trc;
 
-        trc.Set(0.0f, 0.0f, 1.0f, 1.0f);
+        trc.Set(0.0f, 1.0f, 1.0f, 0.0f);
 
         glBegin(GL_TRIANGLE_STRIP);
 

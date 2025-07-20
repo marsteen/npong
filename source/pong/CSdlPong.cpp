@@ -75,7 +75,6 @@ CSdlPong::CSdlPong()
     mShowInterface = true;
     mFullscreen = false;
     mInitEnemies = false;
-    mExploded = false;
     mGameContext.mPlayers = 0;
     mScore[0] = mScore[1] = 0;
     mLevel = 0;
@@ -83,46 +82,26 @@ CSdlPong::CSdlPong()
     //mGameStatus = EGAMESTATUS_WAITING;
     mGameStatus = EGAMESTATUS_PLAYING;
     mScreenSaveMode = false;
-	mBait.Set(20, 10);
 
     player0dir = 0;
     player1dir = 0;
 
-//    ballPosX = 400;
-//    ballPosY = 480 - 64;
-
-    
-
-
-    for (int i = 0; i < 4; i++)
-    {
-        CVector2<int> bait;
-        mBaits.push_back(bait);
-        createNewBait(i);
-    }
+    mWaitCounter = 0;
 
     static const float orange[] = { 1.0f, 0.5f, 0.0, 1.0 };
     static const float cyan[]   = { 0.0f, 1.0f, 1.0, 1.0 };
 
-    
-    mSnake[0].mColor  = colorOrange;
-    mSnake[0].mNumber = 0;
-    mSnake[0].reset();
-    
-    mSnake[1].mColor  = colorCyan;
-    mSnake[1].mNumber = 1;
-    mSnake[1].reset();
 }
 
 void CSdlPong::InitSprites()
 {
-	spriteWand.load("files/bilder/wall-c2.png");
-	spriteKopf1.load("files/bilder/kopf1-b.png");
-	spriteKopf2.load("files/bilder/kopf2-b.png");
-	spriteKopf3.load("files/bilder/kopf3-b.png");
-	spriteKopf4.load("files/bilder/kopf4-b.png");
-	spriteRumpf.load("files/bilder/rumpf-b.png");
-	spriteFutter.load("files/bilder/futter-b.png");
+    for (int d = 0; d <= 9; d++)
+    {
+        stringstream mstr;
+        mstr << "files/bilder/digits/" << d << "-b.png";
+        spriteDigit[d].load(mstr.str().c_str());
+    }
+
 
     spritePaddle.load("files/bilder/paddle-b.png");
     spriteBall.load("files/bilder/ball-b.png");
@@ -130,17 +109,8 @@ void CSdlPong::InitSprites()
 
     spritePaddle.mBorders.top = 32;
     spritePaddle.mBorders.bottom = 32;
-    ballPosX = mGameContext.mPlayField.Width() / 2 - spriteBall.logicalWidth() / 2;
-    ballPosY = mGameContext.mPlayField.Height() / 2 - spriteBall.logicalHeight() / 2;
-    ballDirX = 6.0f;
-    ballDirY = 6.0f;
 
-    const int distPaddleToWall = 100;
-    const int startPosY = (mGameContext.mPlayField.Height() / 2) - spritePaddle.logicalHeight() / 2;
-    player0posX = distPaddleToWall;
-    player0posY = startPosY;
-    player1posX = mGameContext.mPlayField.Width() - spritePaddle.logicalWidth() - distPaddleToWall;    
-    player1posY = startPosY;
+    ResetBall();
 
 }
 
@@ -157,6 +127,27 @@ CSdlPong::~CSdlPong()
 {
 }
 
+
+
+void CSdlPong::ResetBall()
+{
+    ballPosX = mGameContext.mPlayField.Width() / 2 - spriteBall.logicalWidth() / 2;
+    ballPosY = mGameContext.mPlayField.Height() / 2 - spriteBall.logicalHeight() / 2;
+    
+
+    ballDirX = 6.0f;
+    ballDirY = 6.0f;
+
+    const int distPaddleToWall = 100;
+    const int startPosY = (mGameContext.mPlayField.Height() / 2) - spritePaddle.logicalHeight() / 2;
+    player0posX = distPaddleToWall;
+    player0posY = startPosY;
+    player1posX = mGameContext.mPlayField.Width() - spritePaddle.logicalWidth() - distPaddleToWall;    
+    player1posY = startPosY;
+
+    mGameStatus = EGAMESTATUS_WAITING;
+    mWaitCounter = 30;
+}
 
 // ---------------------------------------------------------------------------
 //
@@ -182,23 +173,7 @@ void CSdlPong::InitGame()
     soundBleep0 = mSdlSound.LoadWav("files/sounds/bleep0.wav");
     soundBleep1 = mSdlSound.LoadWav("files/sounds/bleep1.wav");
     soundBleep2 = mSdlSound.LoadWav("files/sounds/bleep2.wav");
-
-
-    // mSdlSound.LoadWav("files/sounds/explosion1.wav");
-    // mSdlSound.LoadWav("files/sounds/explosion2.wav");
-    // mSdlSound.LoadWav("files/sounds/schuss2.wav");
-    //
-    // mSdlSound.LoadWav("files/sounds/1_y.wav"); // 3
-    // mSdlSound.LoadWav("files/sounds/2_y.wav");
-    // mSdlSound.LoadWav("files/sounds/3_y.wav");
-    // mSdlSound.LoadWav("files/sounds/4_y.wav");
-    // mSdlSound.LoadWav("files/sounds/4_y.wav");
-    // mSdlSound.LoadWav("files/sounds/5_y.wav");
-    // mSdlSound.LoadWav("files/sounds/6_y.wav");
-    // mSdlSound.LoadWav("files/sounds/7_y.wav");
-    // mSdlSound.LoadWav("files/sounds/8_y.wav");
-    // mSdlSound.LoadWav("files/sounds/9_y.wav");
-    // mSdlSound.LoadWav("files/sounds/10_y.wav"); // 13
+    soundGoal   = mSdlSound.LoadWav("files/sounds/goal.wav");
 
 
     STextureParams tp;
@@ -519,6 +494,76 @@ bool CSdlPong::CheckIfPlayerHitsBall(const int& playerPosX, const int& playerPos
     return false;
 }
 
+void CSdlPong::GameStatusPlaying()
+{
+    static int dc = 0;
+    bool moveValid = true;
+    
+    int newBallPosX = ballPosX + ballDirX;
+    int newBallPosY = ballPosY + ballDirY;
+
+    if (dc > 0)
+    {
+        dc--;
+    }
+    else
+    {
+        if (ballPosX < 0) // Goal Player 1
+        {
+            mSdlSound.PlayWav(soundGoal);
+            ballDirX = -ballDirX;
+            moveValid = false;
+            dc = 10;
+            if (mScore[1] < 10) mScore[1] += 1;
+            ResetBall();
+        }
+        else
+        if (ballPosX + spriteBall.logicalWidth() > mGameContext.mPlayField.Width()) // Goal Player 0
+        {
+            mSdlSound.PlayWav(soundGoal);
+            ballDirX = -ballDirX;
+            moveValid = false;
+            dc = 10;
+            if (mScore[0] < 10) mScore[0] += 1;
+            ResetBall();
+        }
+
+
+
+        
+        if ((ballPosY < 0) || (ballPosY + spriteBall.logicalHeight() > mGameContext.mPlayField.Height()))
+        {
+            //mSdlSound.PlayWav(soundBleep2);
+            ballDirY = -ballDirY;
+            moveValid = false;
+            dc = 10;
+        }
+
+
+        if (CheckIfPlayerHitsBall(player0posX, player0posY))
+        {
+            mSdlSound.PlayWav(soundBleep0);
+            ballDirX = -ballDirX * 1.05;
+            moveValid = false;
+            dc = 10;                        
+        }
+        else
+        if (CheckIfPlayerHitsBall(player1posX, player1posY))
+        {
+            mSdlSound.PlayWav(soundBleep1);
+            ballDirX = -ballDirX * 1.05;
+            moveValid = false;
+            dc = 10;            
+        }
+    }
+    if (moveValid)
+    {
+        ballPosX = newBallPosX;
+        ballPosY = newBallPosY;
+    }
+}
+
+
 // ---------------------------------------------------------------------------
 //
 // KLASSE        : CSdlPong
@@ -573,61 +618,23 @@ void CSdlPong::GameLoop()
     if (player1posY < 0) player1posY = 0;
     if (player1posY > maxY) player1posY = maxY;
 
-
-
-    static int dc = 0;
-    bool moveValid = true;
-    
-    int newBallPosX = ballPosX + ballDirX;
-    int newBallPosY = ballPosY + ballDirY;
-
-
-
-    if (dc > 0)
+    switch (mGameStatus)
     {
-        dc--;
-    }
-    else
-    {
-        if ((ballPosX < 0) || (ballPosX + spriteBall.logicalWidth() > mGameContext.mPlayField.Width()))
-        {
-            mSdlSound.PlayWav(soundBleep2);
-            ballDirX = -ballDirX;
-            moveValid = false;
-            dc = 10;
-        }
-        if ((ballPosY < 0) || (ballPosY + spriteBall.logicalHeight() > mGameContext.mPlayField.Height()))
-        {
-            mSdlSound.PlayWav(soundBleep2);
-            ballDirY = -ballDirY;
-            moveValid = false;
-            dc = 10;
-        }
+        case  EGAMESTATUS_PLAYING:
+            GameStatusPlaying();
+            break;
+        case  EGAMESTATUS_WAITING:
 
+            if (mWaitCounter == 0)
+            {
+                mGameStatus = EGAMESTATUS_PLAYING;
+            }
+            break;
 
-        if (CheckIfPlayerHitsBall(player0posX, player0posY))
-        {
-            mSdlSound.PlayWav(soundBleep0);
-            ballDirX = -ballDirX * 1.05;
-            moveValid = false;
-            dc = 10;                        
-        }
-        else
-        if (CheckIfPlayerHitsBall(player1posX, player1posY))
-        {
-            mSdlSound.PlayWav(soundBleep1);
-            ballDirX = -ballDirX * 1.05;
-            moveValid = false;
-            dc = 10;            
-        }
     }
 
 
-    if (moveValid)
-    {
-        ballPosX = newBallPosX;
-        ballPosY = newBallPosY;
-    }
+
 
     SDL_GL_SwapWindow(mWindow);
 }
@@ -693,24 +700,6 @@ void CSdlPong::GotoWaitStatus()
 // ---------------------------------------------------------------------------
 //
 // KLASSE        : CSdlPong
-// METHODE       : Digits
-//
-//
-//
-// ---------------------------------------------------------------------------
-
-int CSdlPong::Digits(int k)
-{
-    stringstream mstr;
-
-    mstr << k;
-    return mstr.str().size();
-}
-
-
-// ---------------------------------------------------------------------------
-//
-// KLASSE        : CSdlPong
 // METHODE       : WriteHighScore
 //
 //
@@ -761,6 +750,10 @@ void CSdlPong::DrawSpriteOnField(const CSprite& sprite, int x, int y) const
 void CSdlPong::Timer()
 {
     static int interval;
+    if (mWaitCounter > 0)
+    {
+        mWaitCounter--;
+    }
 
 //    if (interval++ % 5 == 0) mSdlSound.PlayWav(1);
 //    else                     mSdlSound.PlayWav(0);
@@ -771,43 +764,10 @@ void CSdlPong::Timer()
 
 }
 
-void CSdlPong::createNewBait()
-{
-	while (1)
-	{
-	    CVector2<int> tkoor(CRandom::GetInt(1, FIELD_SIZE_X-2), CRandom::GetInt(1, FIELD_SIZE_Y-2));
-		
-		if (!mSnake[0].hasKoor(tkoor) &&
-            !mSnake[1].hasKoor(tkoor))
-		{
-			mBait = tkoor;
-			break;
-		}
-	}	
-}
-
-void CSdlPong::createNewBait(int nr)
-{
-	while (1)
-	{
-	    CVector2<int> tkoor(CRandom::GetInt(1, FIELD_SIZE_X-2), CRandom::GetInt(1, FIELD_SIZE_Y-2));
-		
-		if (!mSnake[0].hasKoor(tkoor) &&
-            !mSnake[1].hasKoor(tkoor))
-		{
-			mBaits[nr] = tkoor;
-			break;
-		}
-	}	
-}
-
 
 
 void CSdlPong::ResetPlayers()
 {
-    mSnake[0].reset();
-    mSnake[1].reset();
-    mGameStatus = EGAMESTATUS_PLAYING;
 }
 
 
@@ -819,40 +779,22 @@ void CSdlPong::JoystickButtonAction(int nr, int type, int jbutton)
     {
         switch (jbutton)
         {
-            case  2: /* BLAU */ 
-                if (nr == 0)
-                {
-                    mSnake[0].reset();
-                    mSnake[1].reset();
-                    mGameStatus = EGAMESTATUS_PLAYING; 
-                }
-                break;
-
-            case 13: mSnake[nr].changeDir(ESnakeDir::LEFT); break;
-            case 14: mSnake[nr].changeDir(ESnakeDir::RIGHT); break;
-            case 11: mSnake[nr].changeDir(ESnakeDir::UP); break;
-            case 12: mSnake[nr].changeDir(ESnakeDir::DOWN); break;
         }
     }
     else // Xbox
     {
         switch (jbutton)
         {
-            case  2: /* BLAU */ 
-                if (nr == 0)
-                {
-                    mSnake[0].reset();
-                    mSnake[1].reset();
-                    mGameStatus = EGAMESTATUS_PLAYING; 
-                }
-                break;
-
-            case 11: mSnake[nr].changeDir(ESnakeDir::LEFT); break;
-            case 12: mSnake[nr].changeDir(ESnakeDir::RIGHT); break;
-            case 13: mSnake[nr].changeDir(ESnakeDir::UP); break;
-            case 14: mSnake[nr].changeDir(ESnakeDir::DOWN); break;
         }
     }
+}
+
+
+void CSdlPong::AutoPlayer()
+{
+    if (),,
+
+
 }
 
 
@@ -879,6 +821,15 @@ void CSdlPong::DrawPlayfield() const
     spritePaddle.draw(player0posX, player0posY, 1.0);
     spritePaddle.draw(player1posX, player1posY, 1.0);
     spriteBall.draw(ballPosX, ballPosY, 1.0);
+
+
+    int x0 = mGameContext.mPlayField.Width() / 2 - spriteDigit[mScore[0]].logicalWidth() - 50;
+    int x1 = mGameContext.mPlayField.Width() / 2 + 50;
+
+    glColor3f(0.4f, 1.0f, 0.0f);
+    spriteDigit[mScore[0]].draw(x0, 50, 1.0);
+    glColor3f(1.0f, 0.4f, 0.0f);
+    spriteDigit[mScore[1]].draw(x1, 50, 1.0);
 }
 
 
@@ -908,9 +859,7 @@ void CSdlPong::Draw2DObjects()
 
         glClear(GL_COLOR_BUFFER_BIT);
         glEnable(GL_BLEND);
-        
-		
-
+    
 
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         glColor4fv(colorGrey);

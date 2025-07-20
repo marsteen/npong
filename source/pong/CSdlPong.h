@@ -112,23 +112,17 @@ class CSdlPong : public CSdlApp
 		void createNewBait();
         void createNewBait(int nr);
         bool CheckIfPlayerHitsBall(const int& playerPosX, const int& playerPosY) const;
+        void ResetBall();
+        void GameStatusPlaying();
         
-        CSprite* snakeSprites[5];
-        CSprite spriteKopf1;
-        CSprite spriteKopf2;
-        CSprite spriteKopf3;
-        CSprite spriteKopf4;
-        CSprite spriteRumpf;
-        CSprite spriteWand;
+        CSprite spriteDigit[10];
         CSprite spritePaddle;
         CSprite spriteDivider;
         CSprite spriteBall;
         CSprite spriteFutter;
-		//uint8_t playfield[40][20];
-		CPong mSnake[2];
-		CVector2<int> mBait;
 
 		std::vector<CVector2<int>> mBaits;
+        int mWaitCounter;
         int player0posX;
         int player0posY;
         int player1posX;
@@ -144,6 +138,7 @@ class CSdlPong : public CSdlApp
         int soundBleep0;
         int soundBleep1;
         int soundBleep2;
+        int soundGoal;
 		
         
 		//

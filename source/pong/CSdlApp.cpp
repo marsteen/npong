@@ -495,7 +495,7 @@ bool CSdlApp::InitScreen() //int xres, int yres, int Bits)
 
     InitGame();
     InitJoysticks();
-    mTimer = SDL_AddTimer(400, sTimerCallback, this);
+    mTimer = SDL_AddTimer(100, sTimerCallback, this);
     return true;
 }
 
