@@ -79,8 +79,7 @@ CSdlPong::CSdlPong()
     mScore[0] = mScore[1] = 0;
     mLevel = 0;
     mHighScore = 0;
-    //mGameStatus = EGAMESTATUS_WAITING;
-    mGameStatus = EGAMESTATUS_PLAYING;
+    mGameStatus = EGAMESTATUS_WAITING;
     mScreenSaveMode = false;
 
     player0dir = 0;
@@ -105,11 +104,11 @@ void CSdlPong::InitSprites()
 
     spritePaddle.load("files/bilder/paddle-b.png");
     spriteBall.load("files/bilder/ball-b.png");
-    spriteDivider.load("files/bilder/divider-b.png");
 
     spritePaddle.mBorders.top = 32;
     spritePaddle.mBorders.bottom = 32;
 
+    srand(time(NULL));
     ResetBall();
 
 }
@@ -127,16 +126,13 @@ CSdlPong::~CSdlPong()
 {
 }
 
-
-
 void CSdlPong::ResetBall()
 {
     ballPosX = mGameContext.mPlayField.Width() / 2 - spriteBall.logicalWidth() / 2;
     ballPosY = mGameContext.mPlayField.Height() / 2 - spriteBall.logicalHeight() / 2;
     
-
-    ballDirX = 8.0f;
-    ballDirY = 8.0f;
+    ballDirX = CRandom::Get(6.0f, 8.0f) * CRandom::Sign();
+    ballDirY = CRandom::Get(4.0f, 8.0f) * CRandom::Sign();
 
     const int distPaddleToWall = 100;
     const int startPosY = (mGameContext.mPlayField.Height() / 2) - spritePaddle.logicalHeight() / 2;
@@ -146,8 +142,9 @@ void CSdlPong::ResetBall()
     player1posY = startPosY;
     playerSpeed = 15;
 
-    mGameStatus = EGAMESTATUS_WAITING;
-    mWaitCounter = 30;
+    logoScale = 1.0f;
+    mGameStatus = EGAMESTATUS_SHOW_LOGO;
+    mWaitCounter = 50;
 
 }
 
@@ -176,13 +173,15 @@ void CSdlPong::InitGame()
     soundBleep1 = mSdlSound.LoadWav("files/sounds/bleep1.wav");
     soundBleep2 = mSdlSound.LoadWav("files/sounds/bleep2.wav");
     soundGoal   = mSdlSound.LoadWav("files/sounds/goal.wav");
-
+    soundWin    = mSdlSound.LoadWav("files/sounds/win.wav");
 
     STextureParams tp;
 
     tp.mMinFilter = GL_NEAREST;
     tp.mMagFilter = GL_NEAREST;
     mLogoTex.LoadTexture(GlobalSystem::getPath("files/bilder/bs-logo.png").c_str(), nullptr);
+    mWin0Tex.LoadTexture(GlobalSystem::getPath("files/bilder/player1wins.png").c_str(), nullptr);
+    mWin1Tex.LoadTexture(GlobalSystem::getPath("files/bilder/player2wins.png").c_str(), nullptr);
     mGameOverTex.LoadTexture(GlobalSystem::getPath("files/gameover.tga").c_str(), nullptr);
     ReadHighScore();
 
@@ -508,7 +507,7 @@ void CSdlPong::RightMouseButtonDown()
 
 bool CSdlPong::CheckIfPlayerHitsBall(const int& playerPosX, const int& playerPosY) const
 {
-    if (ballPosX + spritePaddle.logicalWidth() > playerPosX && 
+    if (ballPosX + spriteBall.logicalWidth() > playerPosX && 
         ballPosX < playerPosX + spritePaddle.logicalWidth())
     {
         if ((playerPosY < ballPosY + spriteBall.logicalHeight()) && 
@@ -525,8 +524,8 @@ void CSdlPong::GameStatusPlaying()
     static int dc = 0;
     bool moveValid = true;
     
-    int newBallPosX = ballPosX + ballDirX;
-    int newBallPosY = ballPosY + ballDirY;
+    float newBallPosX = ballPosX + ballDirX;
+    float newBallPosY = ballPosY + ballDirY;
 
     if (dc > 0)
     {
@@ -536,12 +535,23 @@ void CSdlPong::GameStatusPlaying()
     {
         if (ballPosX < 0) // Goal Player 1
         {
-            mSdlSound.PlayWav(soundGoal);
+            
             ballDirX = -ballDirX;
             moveValid = false;
             dc = 10;
-            if (mScore[1] < 10) mScore[1] += 1;
             ResetBall();
+            if (mScore[1] < 2) 
+            {
+                mSdlSound.PlayWav(soundGoal);
+                mScore[1] += 1;
+            }
+            else 
+            {
+                mWaitCounter = 100;
+                mGameStatus = EGAMESTATUS_WIN_1;
+                mSdlSound.PlayWav(soundWin);
+            }
+            
         }
         else
         if (ballPosX + spriteBall.logicalWidth() > mGameContext.mPlayField.Width()) // Goal Player 0
@@ -550,8 +560,18 @@ void CSdlPong::GameStatusPlaying()
             ballDirX = -ballDirX;
             moveValid = false;
             dc = 10;
-            if (mScore[0] < 10) mScore[0] += 1;
             ResetBall();
+            if (mScore[0] < 2) 
+            {
+                mSdlSound.PlayWav(soundGoal);
+                mScore[0] += 1;                
+            }
+            else 
+            {
+                mWaitCounter = 100;
+                mGameStatus = EGAMESTATUS_WIN_0;
+                mSdlSound.PlayWav(soundWin);
+            }            
         }
 
 
@@ -565,12 +585,17 @@ void CSdlPong::GameStatusPlaying()
             dc = 10;
         }
 
+        constexpr float speedUp = 1.08f;
+        constexpr float playerHitDiv = 10.0f;
+
 
         if (CheckIfPlayerHitsBall(player0posX, player0posY))
         {
             mSdlSound.PlayWav(soundBleep0);
-            ballDirX = -ballDirX * 1.15f;
-            ballDirY *= 1.15f;
+            ballPosX = player0posX + spritePaddle.logicalWidth();
+            ballDirX = -ballDirX * speedUp;
+            ballDirY *= speedUp;
+            ballDirY += float(player0dir) / playerHitDiv;
             moveValid = false;
             dc = 10;                        
         }
@@ -578,10 +603,12 @@ void CSdlPong::GameStatusPlaying()
         if (CheckIfPlayerHitsBall(player1posX, player1posY))
         {
             mSdlSound.PlayWav(soundBleep1);
-            ballDirX = -ballDirX * 1.15f;
-            ballDirY *= 1.15f;
+            ballPosX = player1posX - spriteBall.logicalWidth();
+            ballDirX = -ballDirX * speedUp;
+            ballDirY *= speedUp;
+            ballDirY += float(player0dir) / playerHitDiv;
             moveValid = false;
-            dc = 10;            
+            dc = 10;
         }
     }
     if (moveValid)
@@ -653,12 +680,36 @@ void CSdlPong::GameLoop()
         case  EGAMESTATUS_PLAYING:
             GameStatusPlaying();
             break;
-        case  EGAMESTATUS_WAITING:
+
+        case EGAMESTATUS_SHOW_LOGO:
+
+            if (mWaitCounter == 30)
+            {
+                mGameStatus = EGAMESTATUS_WAITING;
+            }
+            break;
+
+
+        case EGAMESTATUS_WAITING:
 
             if (mWaitCounter == 0)
             {
                 mGameStatus = EGAMESTATUS_PLAYING;
             }
+            break;
+
+        case EGAMESTATUS_WIN_0:
+        case EGAMESTATUS_WIN_1:
+
+            if (mWaitCounter == 0)
+            {
+                ResetBall();
+                mWaitCounter == 30;
+                mScore[0] = 0;
+                mScore[1] = 0;
+                mGameStatus = EGAMESTATUS_WAITING;
+
+            }            
             break;
 
     }
@@ -675,39 +726,30 @@ void CSdlPong::GameLoop()
 // ---------------------------------------------------------------------------
 //
 // KLASSE        : CSdlPong
-// METHODE       : DrawCenterTex
+// METHODE       : DrawCenterPatch
 //
 //
 //
 // ---------------------------------------------------------------------------
 
-void CSdlPong::DrawCenterPatch(CGL_Patch2d* pat)
+void CSdlPong::DrawCenterPatch(CGL_Patch2d* pat, float speed, float scale, float r, float g, float b)
 {
 
 
     //cout << "mGameContext.mPlayField.Width()=" << mGameContext.mPlayField.Width()
     //     << " mGameContext.mPlayField.Height()=" << mGameContext.mPlayField.Height() << " scale=" << mScale << endl;
-    const float zspeed = 1.0003f;
-    static float nx = 1.0f;
-    static float nd = zspeed;
 
-    float ox = 0;
-    float oy = 0;
+    const float effScale = logoScale * scale;
+    
+    glColor4f(r, g, b, 1.0 - (logoScale - 1.0));
+    pat->mPos.x = (mGameContext.mPlayField.Width() / 2) - (pat->mWidth / 2) * effScale;
+    pat->mPos.y = (mGameContext.mPlayField.Height()  / 2) - (pat->mHeight / 2) * effScale;    
+    pat->DrawScaled(effScale);
 
-    glColor4f(1.0f, 1.0f, 1.0f, 0.5f);
-    pat->mPos.x = (mGameContext.mPlayField.Width()  / 2) - (pat->mWidth / 2) + ox;
-    pat->mPos.y = (mGameContext.mPlayField.Height() / 2) - (pat->mHeight / 2) + oy;
-    pat->DrawScaled(1.0f);
+    logoScale *= speed;
 
-    nx *= nd;
-    if (nx > 1.5f)
-    {
-        nd = 1.0f / zspeed;
-    }
-    if (nx < 1.0f)
-    {
-        nd = zspeed;
-    }
+
+
 
     //pat->Draw();
 }
@@ -856,7 +898,11 @@ void CSdlPong::DrawPlayfield() const
     glColor4fv(colorWhite);
     spritePaddle.draw(player0posX, player0posY, 1.0);
     spritePaddle.draw(player1posX, player1posY, 1.0);
-    spriteBall.draw(ballPosX, ballPosY, 1.0);
+
+    if (mGameStatus == EGAMESTATUS_PLAYING || mGameStatus == EGAMESTATUS_WAITING)
+    {
+        spriteBall.draw(ballPosX, ballPosY, 1.0);
+    }
 
 
     int x0 = mGameContext.mPlayField.Width() / 2 - spriteDigit[mScore[0]].logicalWidth() - 50;
@@ -897,18 +943,35 @@ void CSdlPong::Draw2DObjects()
         glEnable(GL_BLEND);
     
 
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        glColor4fv(colorGrey);
-        int yd = 0;
-        const float scale = 0.242f;
-        const int xd = mGameContext.mPlayField.Width() / 2 - (spritePaddle.logicalWidth() / 2) * scale;
-        while (yd < mGameContext.mPlayField.Height())
+        
         {
-            spritePaddle.draw(xd, yd, scale);
-            yd += spritePaddle.logicalHeight() * scale * 2.0f;
+            glColor4fv(colorGrey);   
+            int yd = 0;
+            const float scale = 0.242f;
+            const int xd = mGameContext.mPlayField.Width() / 2 - (spritePaddle.logicalWidth() / 2) * scale;
+            while (yd < mGameContext.mPlayField.Height())
+            {
+                spritePaddle.draw(xd, yd, scale);
+                yd += spritePaddle.logicalHeight() * scale * 2.0f;
+            }            
         }
 
-        //DrawCenterPatch(&mLogoTex);
+        if (mGameStatus == EGAMESTATUS_SHOW_LOGO)
+        {
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            DrawCenterPatch(&mLogoTex, 1.01, 1.0f, 1.0f, 1.0f, 1.0f);            
+        }
+        else
+        if (mGameStatus == EGAMESTATUS_WIN_0)
+        {
+            DrawCenterPatch(&mWin0Tex, 1.003f, 2.0f, 0.4f, 1.0f, 0.0f);
+        }
+        else
+        if (mGameStatus == EGAMESTATUS_WIN_1)
+        {
+            DrawCenterPatch(&mWin1Tex, 1.003f, 2.0f,  1.0f, 0.4f, 0.0f);
+        }
+
 
         glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 		DrawPlayfield();

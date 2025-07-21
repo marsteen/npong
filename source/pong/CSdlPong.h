@@ -49,8 +49,11 @@ enum
 enum EGameStatus
 {
     EGAMESTATUS_WAITING,    // Warten dass was passiert
-    EGAMESTATUS_GAMEOVER,   // Warten dass was passiert
-    EGAMESTATUS_PLAYING     // Spiel laeuft
+    EGAMESTATUS_GAMEOVER,   // 
+    EGAMESTATUS_PLAYING,    // Spiel laeuft
+    EGAMESTATUS_SHOW_LOGO,  // Logo anzeigen
+    EGAMESTATUS_WIN_0,      // Player 0 hat gewonnen
+    EGAMESTATUS_WIN_1       // Player 1 hat gewonnen
 };
 
 class CSdlPong : public CSdlApp
@@ -118,9 +121,7 @@ class CSdlPong : public CSdlApp
         
         CSprite spriteDigit[10];
         CSprite spritePaddle;
-        CSprite spriteDivider;
         CSprite spriteBall;
-        CSprite spriteFutter;
 
 		std::vector<CVector2<int>> mBaits;
         int mWaitCounter;
@@ -132,15 +133,18 @@ class CSdlPong : public CSdlApp
         int player1dir;
         int playerSpeed;
 
-        int ballPosX;
-        int ballPosY;
-        int ballDirX;
-        int ballDirY;
+        float ballPosX;
+        float ballPosY;
+        float ballDirX;
+        float ballDirY;
+        float ballStartFaktor;
+        float logoScale;
 
         int soundBleep0;
         int soundBleep1;
         int soundBleep2;
         int soundGoal;
+        int soundWin;
 		
         
 		//
@@ -175,7 +179,7 @@ class CSdlPong : public CSdlApp
         void RunUnits();
         bool TestCrash(CVectorUnit* vu);
         bool TestPlayerCrash();
-        void DrawCenterPatch(CGL_Patch2d* pat);
+        void DrawCenterPatch(CGL_Patch2d* pat,float speed, float scale, float r, float g, float b);
         void PlayerExplodes(int p);
         void BonusScore();
 
@@ -207,6 +211,8 @@ class CSdlPong : public CSdlApp
         bool mInitEnemies;
         CVectorUnit mZiffern[10];
         CGL_Patch2d mLogoTex;                       // Titelbild-Textur
+        CGL_Patch2d mWin0Tex;                       // Spieler 1 gewonnen
+        CGL_Patch2d mWin1Tex;                       // Spieler 2 gewonnen
         CGL_Patch2d mGameOverTex;                   // "Game Over"-Textur
         CSdlSound mSdlSound;
         int mGameOverTime;                          // Zeit fuer GameOver-Status
