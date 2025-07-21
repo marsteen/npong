@@ -348,6 +348,29 @@ bool CSdlPong::ParseKeys(SDL_Keycode key, bool down)
             // Spielsteuerung
             //
 
+            case SDLK_UP:
+
+                if (down)
+                {
+                    player0dir = playerSpeed;
+                }
+                else
+                {
+                    player0dir = 0;
+                }
+                break;
+
+            case SDLK_DOWN:
+
+                if (down)
+                {
+                    player0dir = -playerSpeed;
+                }
+                else
+                {
+                    player0dir = 0;
+                }
+                break;
 
             case SDLK_9:
 
