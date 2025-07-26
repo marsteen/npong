@@ -86,6 +86,8 @@ CSdlPong::CSdlPong()
     player1dir = 0;
 
     mWaitCounter = 0;
+    
+    players = 2;
 
     static const float orange[] = { 1.0f, 0.5f, 0.0, 1.0 };
     static const float cyan[]   = { 0.0f, 1.0f, 1.0, 1.0 };
@@ -303,7 +305,7 @@ void CSdlPong::moveJoyAxis(int joystick, int axis, int axisValue)
     switch (joystick)
     {
         case 0:  player0dir = dir; break;
-        //case 1:  player1dir = dir;; break;
+        case 1:  if (players == 2) player1dir = dir; break;
     }    
 }
 
@@ -328,7 +330,9 @@ bool CSdlPong::ParseKeys(SDL_Keycode key, bool down)
     {
         switch (key)
         {
-
+            case SDLK_1: players = 1; break;
+            case SDLK_2: players = 2; break;
+            
             case SDLK_ESCAPE:
 
                 if (down)
@@ -540,10 +544,9 @@ void CSdlPong::GameStatusPlaying()
             moveValid = false;
             dc = 10;
             ResetBall();
-            if (mScore[1] < 2) 
+            if (mScore[1] < 4) 
             {
                 mSdlSound.PlayWav(soundGoal);
-                mScore[1] += 1;
             }
             else 
             {
@@ -551,6 +554,7 @@ void CSdlPong::GameStatusPlaying()
                 mGameStatus = EGAMESTATUS_WIN_1;
                 mSdlSound.PlayWav(soundWin);
             }
+            mScore[1] += 1;
             
         }
         else
@@ -561,17 +565,17 @@ void CSdlPong::GameStatusPlaying()
             moveValid = false;
             dc = 10;
             ResetBall();
-            if (mScore[0] < 2) 
+            if (mScore[0] < 4) 
             {
-                mSdlSound.PlayWav(soundGoal);
-                mScore[0] += 1;                
+                mSdlSound.PlayWav(soundGoal);         
             }
             else 
             {
                 mWaitCounter = 100;
                 mGameStatus = EGAMESTATUS_WIN_0;
                 mSdlSound.PlayWav(soundWin);
-            }            
+            }
+            mScore[0] += 1;        
         }
 
 
@@ -664,7 +668,10 @@ void CSdlPong::GameLoop()
     StaticFramebufferObject->DrawTexture(mXres, mYres);
 #endif
 
-    AutoPlayer();
+    if (players == 1)
+    {
+        AutoPlayer();
+    }
 
     player0posY += player0dir;
     player1posY += player1dir;

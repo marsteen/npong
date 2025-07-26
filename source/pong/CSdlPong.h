@@ -132,6 +132,7 @@ class CSdlPong : public CSdlApp
         int player0dir;
         int player1dir;
         int playerSpeed;
+        int players;
 
         float ballPosX;
         float ballPosY;
