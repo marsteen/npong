@@ -1,7 +1,7 @@
 //***************************************************************************
 //
 //
-// @PROJECT  :	mvsnake
+// @PROJECT  :	npong
 // @VERSION  :	1.0
 // @FILENAME :	CSdlPong.h
 // @DATE     :	24.8.2024
@@ -114,7 +114,7 @@ class CSdlPong : public CSdlApp
 		void DrawSpriteOnField(const CSprite& sprite, int x, int y) const;
 		void createNewBait();
         void createNewBait(int nr);
-        bool CheckIfPlayerHitsBall(const int& playerPosX, const int& playerPosY) const;
+        bool CheckIfPlayerHitsBall(const int& playerPosX, const int& playerPosY, float bx, float by) const;
         void ResetBall();
         void GameStatusPlaying();
         void AutoPlayer();

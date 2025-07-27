@@ -1,2 +1,2 @@
 UBUNTU:
-sudo apt-get install libsdl2-dev libglew-dev libpng-dev
+sudo apt-get install libsdl2-dev libglew-dev libpng-dev libstb-dev

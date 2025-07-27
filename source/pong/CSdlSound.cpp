@@ -352,7 +352,7 @@ void CSdlSound::PlayWav(int n)
 //
 // ---------------------------------------------------------------------------
 
-void CSdlSound::PlayMusic(int n)
+void CSdlSound::PlayMusic(int n, float volume)
 {
     if (mMusic == NULL)
     {
@@ -361,7 +361,7 @@ void CSdlSound::PlayMusic(int n)
         PlaySound.mAudioPos = mSounds[n]->mWavBuffer;
         PlaySound.mAudioLen = mSounds[n]->mWavLength;
         PlaySound.mMusicFlag = true;
-        PlaySound.mVolume = 0.05;
+        PlaySound.mVolume = volume;
         mMusic = mSounds[n];
 
         SDL_LockAudio();

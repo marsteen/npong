@@ -68,7 +68,7 @@ class CSdlSound
         void StartPlaying();
         void StopPlaying();
         void PlayWav(int n);
-        void PlayMusic(int n);
+        void PlayMusic(int n, float volume=0.05f);
         void NewMusic(int n);
         void Finish();
         void MixSounds(Uint8* stream, int len);

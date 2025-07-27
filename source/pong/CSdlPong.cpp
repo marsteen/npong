@@ -190,7 +190,7 @@ void CSdlPong::InitGame()
 
     mSdlSound.StartPlaying();
 
-    mSdlSound.PlayMusic(soundMusic);
+    mSdlSound.PlayMusic(soundMusic, 0.5f);
 
 
 
@@ -512,13 +512,13 @@ void CSdlPong::RightMouseButtonDown()
 //#define USE_FB
 
 
-bool CSdlPong::CheckIfPlayerHitsBall(const int& playerPosX, const int& playerPosY) const
+bool CSdlPong::CheckIfPlayerHitsBall(const int& playerPosX, const int& playerPosY, float bx, float by) const
 {
-    if (ballPosX + spriteBall.logicalWidth() > playerPosX && 
-        ballPosX < playerPosX + spritePaddle.logicalWidth())
+    if (bx + spriteBall.logicalWidth() > playerPosX && 
+        bx < playerPosX + spritePaddle.logicalWidth())
     {
-        if ((playerPosY < ballPosY + spriteBall.logicalHeight()) && 
-            (playerPosY + spritePaddle.logicalHeight() > ballPosY))
+        if ((playerPosY < by + spriteBall.logicalHeight()) && 
+            (playerPosY + spritePaddle.logicalHeight() > by))
         {            
             return true;
         }
@@ -529,10 +529,10 @@ bool CSdlPong::CheckIfPlayerHitsBall(const int& playerPosX, const int& playerPos
 void CSdlPong::GameStatusPlaying()
 {
     static int dc = 0;
-    bool moveValid = true;
+    bool goal = false;
     
-    float newBallPosX = ballPosX + ballDirX;
-    float newBallPosY = ballPosY + ballDirY;
+    float bx = ballPosX;
+    float by = ballPosY;
 
     if (dc > 0)
     {
@@ -542,10 +542,6 @@ void CSdlPong::GameStatusPlaying()
     {
         if (ballPosX < 0) // Goal Player 1
         {
-            
-            ballDirX = -ballDirX;
-            moveValid = false;
-            dc = 10;
             ResetBall();
             if (mScore[1] < 4) 
             {
@@ -558,15 +554,13 @@ void CSdlPong::GameStatusPlaying()
                 mSdlSound.PlayWav(soundWin);
             }
             mScore[1] += 1;
+            goal = true;
             
         }
         else
         if (ballPosX + spriteBall.logicalWidth() > mGameContext.mPlayField.Width()) // Goal Player 0
         {
-            mSdlSound.PlayWav(soundGoal);
-            ballDirX = -ballDirX;
-            moveValid = false;
-            dc = 10;
+            
             ResetBall();
             if (mScore[0] < 4) 
             {
@@ -578,50 +572,67 @@ void CSdlPong::GameStatusPlaying()
                 mGameStatus = EGAMESTATUS_WIN_0;
                 mSdlSound.PlayWav(soundWin);
             }
-            mScore[0] += 1;        
+            mScore[0] += 1;
+            goal = true;   
         }
 
 
-
-        
-        if ((ballPosY < 0) || (ballPosY + spriteBall.logicalHeight() > mGameContext.mPlayField.Height()))
+        if (!goal)
         {
-            mSdlSound.PlayWav(soundBleep2);
-            ballDirY = -ballDirY;
-            moveValid = false;
-            dc = 10;
-        }
-
-        constexpr float speedUp = 1.08f;
-        constexpr float playerHitDiv = 10.0f;
-
-
-        if (CheckIfPlayerHitsBall(player0posX, player0posY))
-        {
-            mSdlSound.PlayWav(soundBleep0);
-            ballPosX = player0posX + spritePaddle.logicalWidth();
-            ballDirX = -ballDirX * speedUp;
-            ballDirY *= speedUp;
-            ballDirY += float(player0dir) / playerHitDiv;
-            moveValid = false;
-            dc = 10;                        
-        }
-        else
-        if (CheckIfPlayerHitsBall(player1posX, player1posY))
-        {
-            mSdlSound.PlayWav(soundBleep1);
-            ballPosX = player1posX - spriteBall.logicalWidth();
-            ballDirX = -ballDirX * speedUp;
-            ballDirY *= speedUp;
-            ballDirY += float(player0dir) / playerHitDiv;
-            moveValid = false;
-            dc = 10;
-        }
-    }
-    if (moveValid)
-    {
-        ballPosX = newBallPosX;
-        ballPosY = newBallPosY;
+        	constexpr int ballMoveResolution = 25;
+        	
+			const float dx = ballDirX / ballMoveResolution;
+			const float dy = ballDirY / ballMoveResolution;
+			
+			for (int r = 0; r < ballMoveResolution; r++)
+			{
+			    //cout << "r=" << r << " of " << ballMoveResolution << endl;
+		    	const float lastBx = bx;
+		    	const float lastBy = by;
+            	bx += dx;
+            	by += dy;
+        		if ((by < 0) || (by + spriteBall.logicalHeight() > mGameContext.mPlayField.Height()))
+        		{
+            		mSdlSound.PlayWav(soundBleep2);
+            		ballDirY = -ballDirY;
+            		bx = lastBx;
+            		by = lastBy;
+            		//dc = 10;
+            		break;
+        		}
+		
+        		constexpr float speedUp = 1.08f;
+        		constexpr float playerHitDiv = 10.0f;
+		
+		
+        		if (CheckIfPlayerHitsBall(player0posX, player0posY, bx, by))
+        		{
+            		mSdlSound.PlayWav(soundBleep0);
+            		ballDirX = -ballDirX * speedUp;
+            		ballDirY *= speedUp;
+            		ballDirY += float(player0dir) / playerHitDiv;
+            		bx = lastBx;
+            		by = lastBy;
+            		break;                       
+        		}
+        		else
+        		if (CheckIfPlayerHitsBall(player1posX, player1posY, bx, by))
+        		{
+            		mSdlSound.PlayWav(soundBleep1);
+            		//ballPosX = player1posX - spriteBall.logicalWidth();
+            		ballDirX = -ballDirX * speedUp;
+            		ballDirY *= speedUp;
+            		ballDirY += float(player0dir) / playerHitDiv;
+            		bx = lastBx;
+            		by = lastBy;
+            		
+            		//dc = 10;
+            		break;
+        		}
+        	}
+    	}
+    	ballPosX = bx;
+    	ballPosY = by;
     }
 }
 
