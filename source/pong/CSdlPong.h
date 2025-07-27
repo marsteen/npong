@@ -94,7 +94,7 @@ class CSdlPong : public CSdlApp
         void Zoom(float f);
         void LoadEnvTexture(bool Anaglyph);
         void InitGame();
-        void FinishGame();
+        void FinishGame() override;
 
 
         const char* mActInfobox;
@@ -146,6 +146,7 @@ class CSdlPong : public CSdlApp
         int soundBleep2;
         int soundGoal;
         int soundWin;
+        int soundMusic;
 		
         
 		//

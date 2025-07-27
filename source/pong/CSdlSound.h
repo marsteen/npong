@@ -24,11 +24,12 @@ class CSdlWavSound
 
         CSdlWavSound()
         {
+            mWavLength = 0;
             mWavBuffer = NULL;
         }
 
-
         bool LoadWav(const char* WavFilename);
+        bool LoadOgg(const char* OggFilename);
 
         SDL_AudioSpec mWavSpec;
         Uint32 mWavLength;
@@ -43,12 +44,10 @@ struct SPlaySound
         mVolume = 0.3;
     }
 
-
     Uint32	mAudioLen;
     Uint8*	mAudioPos;
     float	mVolume; // zwischen 0.0 und 1.0
     bool	mMusicFlag;
-
 
     bool operator==(const SPlaySound& k) const
     {
@@ -65,6 +64,7 @@ class CSdlSound
 
         bool InitAudio();
         int LoadWav(const char* WavFilename);
+        int LoadOgg(const char* OggFilename);
         void StartPlaying();
         void StopPlaying();
         void PlayWav(int n);
@@ -74,18 +74,11 @@ class CSdlSound
         void MixSounds(Uint8* stream, int len);
         void StopMusic();
 
-//    Uint32 mAudioLen;
-//    Uint8* mAudioPos;
-
-
-
     protected:
 
         std::vector<CSdlWavSound*> mSounds;
-
         std::list<SPlaySound> mPlaySoundsList;
         CSdlWavSound* mMusic;
-        //std::vector<SPlaySound> mRemoveSoundVec;
 };
 
 #endif

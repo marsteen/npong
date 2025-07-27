@@ -176,6 +176,7 @@ void CSdlPong::InitGame()
     soundBleep2 = mSdlSound.LoadWav("files/sounds/bleep2.wav");
     soundGoal   = mSdlSound.LoadWav("files/sounds/goal.wav");
     soundWin    = mSdlSound.LoadWav("files/sounds/win.wav");
+    soundMusic  = mSdlSound.LoadOgg("files/sounds/neon-dreams.ogg");
 
     STextureParams tp;
 
@@ -188,6 +189,8 @@ void CSdlPong::InitGame()
     ReadHighScore();
 
     mSdlSound.StartPlaying();
+
+    mSdlSound.PlayMusic(soundMusic);
 
 
 

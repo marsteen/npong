@@ -76,6 +76,7 @@ target_link_libraries(${CMAKE_PROJECT_NAME}
     ${PNG_LIBRARY}
     ${JPEG_LIBRARY}
     ZLIB::ZLIB
+    stb
 )
 
 

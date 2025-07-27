@@ -19,6 +19,23 @@
 
 using namespace std;
 
+extern "C"
+{
+    int stb_vorbis_decode_filename(const char *filename, int *channels, int *sample_rate, short **output);
+}
+
+static void showAudioSpec(const char* filename, const SDL_AudioSpec* as)
+{
+    cout << "file: " << filename << endl;
+    cout << "  freq:" << as->freq << endl;
+    cout << "  format:" << as->format << endl;
+    cout << "  channels:" << (int) as->channels << endl;
+    cout << "  silence:" << (int) as->silence << endl;
+    cout << "  samples:" << as->samples << endl;
+    cout << "  padding:" << as->padding << endl;
+    cout << "  size:" << as->size << endl;
+}
+
 
 // ---------------------------------------------------------------------------
 //
@@ -171,17 +188,21 @@ bool CSdlSound::InitAudio()
 
 void CSdlSound::Finish()
 {
+    cout << "CSdlSound::Finish() start"  << endl;
     StopPlaying();
+    SDL_Delay(100);
     SDL_LockAudio();
-    for (vector<CSdlWavSound*>::iterator it = mSounds.begin();
-        it != mSounds.end();
-        ++it)
-    {
+    SDL_Delay(100);
+    for (vector<CSdlWavSound*>::iterator it = mSounds.begin(); it != mSounds.end(); ++it)
+    {        
         SDL_FreeWAV((*it)->mWavBuffer);
         delete *it;
     }
 
+    cout << "CSdlSound::Finish() ok"  << endl;
+    SDL_UnlockAudio();
     SDL_CloseAudio();
+    cout << "CSdlSound::Finish() end"  << endl;
 }
 
 
@@ -253,6 +274,46 @@ int CSdlSound::LoadWav(const char* WavFilename)
     }
     return n;
 }
+
+// ---------------------------------------------------------------------------
+//
+// KLASSE        : CSdlSound
+// METHODE       : LoadOgg
+//
+//
+//
+// ---------------------------------------------------------------------------
+
+int CSdlSound::LoadOgg(const char* OggFilename)
+{
+    int n;
+
+
+    CSdlWavSound* WavSound = new CSdlWavSound;
+
+    if (WavSound->LoadOgg(GlobalSystem::getPath(OggFilename).c_str()))
+    {
+        if (GlobalSystem::isEndianModeBig())
+        {
+            short* SoundPtr = (short*)WavSound->mWavBuffer;
+            int WavSize16Bit = WavSound->mWavLength / 2;
+            for (int n = 0; n < WavSize16Bit; n++)
+            {
+                GlobalSystem::swapWord(SoundPtr++);
+            }
+        }
+
+
+        mSounds.push_back(WavSound);
+        n = mSounds.size() - 1;
+    }
+    else
+    {
+        n = -1;
+    }
+    return n;
+}
+
 
 
 // ---------------------------------------------------------------------------
@@ -375,3 +436,48 @@ bool CSdlWavSound::LoadWav(const char* WavFilename)
     }
     return r;
 }
+
+
+// ---------------------------------------------------------------------------
+//
+// KLASSE        : CSdlWavSound
+// METHODE       : LoadOgg
+//
+//
+//
+// ---------------------------------------------------------------------------
+
+bool CSdlWavSound::LoadOgg(const char* OggFilename)
+{
+
+
+    bool r = false;
+    #if 1
+
+    int channels;
+    int sample_rate;    
+    short * output;
+    memset(&mWavSpec, 0, sizeof(SDL_AudioSpec));
+
+    int sc = stb_vorbis_decode_filename(OggFilename, (int*) &mWavSpec.channels, &mWavSpec.freq, (short**) &mWavBuffer);
+    if (sc == -1)
+    {
+        cout    << "***** Could not open OGG file:" << OggFilename << endl;
+    }
+    else
+    {
+        showAudioSpec(OggFilename, &mWavSpec);
+        mWavLength = (int) sc * mWavSpec.channels * 2;
+        mWavSpec.freq = 44100;
+        mWavSpec.format = 32784;
+        mWavSpec.samples = 4096;
+        //mIsOgg = true;
+
+        
+
+        r = true;
+    }
+    #endif
+    return r;
+}
+
