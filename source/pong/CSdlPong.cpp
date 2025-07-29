@@ -333,6 +333,7 @@ bool CSdlPong::ParseKeys(SDL_Keycode key, bool down)
     {
         switch (key)
         {
+            case SDLK_0: players = 0; break;
             case SDLK_1: players = 1; break;
             case SDLK_2: players = 2; break;
             
@@ -687,8 +688,15 @@ void CSdlPong::GameLoop()
 
     if (players == 1)
     {
-        AutoPlayer();
+        AutoPlayer(player1posX, player1posY, player1dir);
     }
+    else
+    if (players == 0)
+    {
+        AutoPlayer(player0posX, player0posY, player0dir);
+        AutoPlayer(player1posX, player1posY, player1dir);    
+    }
+
 
     player0posY += player0dir;
     player1posY += player1dir;
@@ -888,14 +896,17 @@ void CSdlPong::JoystickButtonAction(int nr, int type, int jbutton)
 }
 
 
-void CSdlPong::AutoPlayer()
+void CSdlPong::AutoPlayer(const int& playerPosX, const int& playerPosY, int& playerDir)
 {
     int ps = 0;
     player1dir = 0;
-    int ballMiddleY = ballPosY + spriteBall.logicalHeight() / 2;
-    int paddleMiddleY = player1posY + spritePaddle.logicalHeight() / 2;
+    const int ballMiddleX = ballPosX + spriteBall.logicalWidth() / 2;
+    const int paddleMiddleX = playerPosX + spritePaddle.logicalWidth() / 2;
+    const int ballMiddleY = ballPosY + spriteBall.logicalHeight() / 2;
+    const int paddleMiddleY = playerPosY + spritePaddle.logicalHeight() / 2;
 
-    const int diff = std::abs(ballMiddleY - paddleMiddleY);
+    const int diffX = std::abs(ballMiddleX - paddleMiddleX);
+    const int diffY = std::abs(ballMiddleY - paddleMiddleY);
     //cout << "diff=" << diff << " ballMiddleY=" << ballMiddleY << " paddleMiddleY=" << paddleMiddleY << endl;
 
     if (std::abs(ballMiddleY - paddleMiddleY) < std::abs(playerSpeed))
@@ -909,13 +920,20 @@ void CSdlPong::AutoPlayer()
 
 
     
-    if (ballMiddleY < paddleMiddleY) player1dir = -ps;
+    if (ballMiddleY < paddleMiddleY) playerDir = -ps;
     else
-    if (ballMiddleY > paddleMiddleY) player1dir = ps;
+    if (ballMiddleY > paddleMiddleY) playerDir = ps;
     else
-    player1dir = 0;
+    playerDir = 0;
 
-    cout << "player1dir=" << player1dir << endl;
+    cout << "diffX=" << diffX << " gameField width=" << mGameContext.mPlayField.Width() << endl;
+
+    if (diffX > mGameContext.mPlayField.Width() * 0.5)
+    {
+        playerDir *= 0.5f;
+    }
+
+    //cout << "player1dir=" << player1dir << endl;
 }
 
 
