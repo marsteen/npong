@@ -67,6 +67,7 @@ add_executable(${CMAKE_PROJECT_NAME}
 ./source/global/GlobalSystemFunctions.cpp
 ./source/global/GlobalDebug.cpp
 ./source/mvpng/mv_graphics_png.c
+./source/stb/stb_vorbis.c
 )
 
 target_link_libraries(${CMAKE_PROJECT_NAME}
@@ -76,7 +77,6 @@ target_link_libraries(${CMAKE_PROJECT_NAME}
     ${PNG_LIBRARY}
     ${JPEG_LIBRARY}
     ZLIB::ZLIB
-    stb
 )
 
 

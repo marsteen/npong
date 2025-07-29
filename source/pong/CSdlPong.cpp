@@ -290,10 +290,10 @@ void CSdlPong::StartGame()
 
 void CSdlPong::moveJoyAxis(int joystick, int axis, int axisValue)
 {
-    int dir = 0;
-    if (abs(axisValue) >= 2000)
+    if (axis == 1)
     {
-        if (axis == 1)
+        int dir = 0;
+        if (abs(axisValue) >= 2000)
         {
             if (axisValue > 0)
             {
@@ -304,12 +304,13 @@ void CSdlPong::moveJoyAxis(int joystick, int axis, int axisValue)
                 dir = playerSpeed;
             }
         }
+        
+        switch (joystick)
+        {
+            case 0:  if (players > 0) player0dir = dir; break;
+            case 1:  if (players == 2) player1dir = dir; break;
+        }
     }
-    switch (joystick)
-    {
-        case 0:  player0dir = dir; break;
-        case 1:  if (players == 2) player1dir = dir; break;
-    }    
 }
 
 
@@ -736,7 +737,7 @@ void CSdlPong::GameLoop()
             if (mWaitCounter == 0)
             {
                 ResetBall();
-                mWaitCounter == 30;
+                mWaitCounter = 30;
                 mScore[0] = 0;
                 mScore[1] = 0;
                 mGameStatus = EGAMESTATUS_WAITING;
