@@ -87,18 +87,20 @@ class CSdlPong : public CSdlApp
         void ResetPlayers() override;
         void moveJoyAxis(int joystick, int axis, int axisValue) override;
 
+
     protected:
 
         void SetResolution(int w, int h) override;
         void Zoom(float f);
         void LoadEnvTexture(bool Anaglyph);
-        void InitGame();
+        void InitGame() override;
         void FinishGame() override;
 
 
         const char* mActInfobox;
         bool mInitFlag;
         bool mShowInterface;
+        bool mAnalogJoystick;
 
 
         /*******************************************
@@ -116,7 +118,8 @@ class CSdlPong : public CSdlApp
         bool CheckIfPlayerHitsBall(const int& playerPosX, const int& playerPosY, float bx, float by) const;
         void ResetBall();
         void GameStatusPlaying();
-        void AutoPlayer(const int& playerPosX, const int& playerPosY, int& playerDirY);        
+        void AutoPlayer(const int& playerPosX, const int& playerPosY, int& playerDirY); 
+        float getPlayerSpeed(int axisValue) const; 
         
         CSprite spriteDigit[10];
         CSprite spritePaddle;
@@ -156,6 +159,7 @@ class CSdlPong : public CSdlApp
         CGL_Patch2d mWin1Tex;                       // Spieler 2 gewonnen
         CGL_Patch2d mGameOverTex;                   // "Game Over"-Textur
         CSdlSound mSdlSound;
+        
         int mScore[2];
         
 		//

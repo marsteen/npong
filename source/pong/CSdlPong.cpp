@@ -226,6 +226,17 @@ void CSdlPong::SetResolution(int w, int h)
     }
 }
 
+
+float CSdlPong::getPlayerSpeed(int axisValue) const
+{
+    if (mAnalogJoystick)
+    {
+      const float dyn = 25000 - 2000;
+      return std::abs(playerSpeed * float(axisValue - 2000) / dyn);
+    }
+    return playerSpeed;
+}
+
 // ---------------------------------------------------------------------------
 //
 // KLASSE        : CSdlPong
@@ -244,11 +255,11 @@ void CSdlPong::moveJoyAxis(int joystick, int axis, int axisValue)
         {
             if (axisValue > 0)
             {
-                dir = -playerSpeed;
+                dir = -getPlayerSpeed(axisValue);
             }
             else
             {
-                dir = playerSpeed;
+                dir = getPlayerSpeed(axisValue);
             }
         }
         
@@ -659,6 +670,9 @@ void CSdlPong::GameLoop()
                 mGameStatus = EGAMESTATUS_WAITING;
 
             }            
+            break;
+
+        default:
             break;
 
     }
