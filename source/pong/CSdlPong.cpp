@@ -74,13 +74,9 @@ CSdlPong::CSdlPong()
     mInitFlag = false;
     mShowInterface = true;
     mFullscreen = false;
-    mInitEnemies = false;
     mGameContext.mPlayers = 0;
     mScore[0] = mScore[1] = 0;
-    mLevel = 0;
-    mHighScore = 0;
     mGameStatus = EGAMESTATUS_WAITING;
-    mScreenSaveMode = false;
 
     player0dir = 0;
     player1dir = 0;
@@ -176,7 +172,8 @@ void CSdlPong::InitGame()
     soundBleep2 = mSdlSound.LoadWav("files/sounds/bleep2.wav");
     soundGoal   = mSdlSound.LoadWav("files/sounds/goal.wav");
     soundWin    = mSdlSound.LoadWav("files/sounds/win.wav");
-    soundMusic  = mSdlSound.LoadOgg("files/sounds/neon-dreams.ogg");
+    //soundMusic  = mSdlSound.LoadOgg("files/sounds/neon-dreams.ogg");
+    soundMusic  = mSdlSound.LoadOgg("files/sounds/music-02.ogg");
 
     STextureParams tp;
 
@@ -186,13 +183,9 @@ void CSdlPong::InitGame()
     mWin0Tex.LoadTexture(GlobalSystem::getPath("files/bilder/player1wins.png").c_str(), nullptr);
     mWin1Tex.LoadTexture(GlobalSystem::getPath("files/bilder/player2wins.png").c_str(), nullptr);
     mGameOverTex.LoadTexture(GlobalSystem::getPath("files/gameover.tga").c_str(), nullptr);
-    ReadHighScore();
 
     mSdlSound.StartPlaying();
-
     mSdlSound.PlayMusic(soundMusic, 0.5f);
-
-
 
     //cout << "Loading sounds ok" << endl;
 }
@@ -232,52 +225,6 @@ void CSdlPong::SetResolution(int w, int h)
         mInitFlag = true;
     }
 }
-
-// ---------------------------------------------------------------------------
-//
-// KLASSE        : CSdlPong
-// METHODE       : ParseMouseRel
-//
-//
-//
-// ---------------------------------------------------------------------------
-
-void CSdlPong::ParseMouseRel(float xrel, float yrel)
-{
-    float f1 = fabs(float(xrel));
-    float f2 = 1.1;
-    float frot = pow(f1, f2) / mMouseFaktor;
-    
-
-    //mPlayer[0].AddRotation(-float(xrel) / 7.0);
-    
-   // cout << "xrel=" << xrel << " yrel=" << yrel << " frot=" << frot << endl;
-
-    if (xrel < 0)
-    {
-        mPlayer[0].AddRotation(frot);
-    }
-    else
-    {
-        mPlayer[0].AddRotation(-frot);
-    }
-}
-
-// ---------------------------------------------------------------------------
-//
-// KLASSE        : CSdlPong
-// METHODE       : StartGame
-//
-//
-//
-// ---------------------------------------------------------------------------
-
-void CSdlPong::StartGame()
-{
-    mSdlSound.PlayMusic(3);
-    mSdlSound.NewMusic(3);
-}
-
 
 // ---------------------------------------------------------------------------
 //
@@ -379,37 +326,6 @@ bool CSdlPong::ParseKeys(SDL_Keycode key, bool down)
                     player0dir = 0;
                 }
                 break;
-
-            case SDLK_9:
-
-                if (down)
-                {
-                    mScreenSaveMode = !mScreenSaveMode;
-
-                    if (!mScreenSaveMode)
-                    {
-                        mSaveScreenGL.Write();
-                    }
-                }
-
-
-                break;
-
-            case SDLK_ESCAPE:
-
-                if (down)
-                {
-                    if (mGameStatus == EGAMESTATUS_PLAYING)
-                    {
-                        GotoWaitStatus();
-                    }
-                    else
-                    {
-                        bQuit = false;
-                    }
-                }
-                break;
-
 
             case SDLK_TAB:
             case SDLK_LCTRL:
@@ -768,10 +684,6 @@ void CSdlPong::GameLoop()
 void CSdlPong::DrawCenterPatch(CGL_Patch2d* pat, float speed, float scale, float r, float g, float b)
 {
 
-
-    //cout << "mGameContext.mPlayField.Width()=" << mGameContext.mPlayField.Width()
-    //     << " mGameContext.mPlayField.Height()=" << mGameContext.mPlayField.Height() << " scale=" << mScale << endl;
-
     const float effScale = logoScale * scale;
     
     glColor4f(r, g, b, 1.0 - (logoScale - 1.0));
@@ -780,70 +692,8 @@ void CSdlPong::DrawCenterPatch(CGL_Patch2d* pat, float speed, float scale, float
     pat->DrawScaled(effScale);
 
     logoScale *= speed;
-
-
-
-
-    //pat->Draw();
 }
 
-
-// ---------------------------------------------------------------------------
-//
-// KLASSE        : CSdlPong
-// METHODE       : GotoWaitStatus
-//
-//
-//
-// ---------------------------------------------------------------------------
-
-void CSdlPong::GotoWaitStatus()
-{
-    mGameStatus = EGAMESTATUS_WAITING;
-    mSdlSound.StopMusic();
-}
-
-
-// ---------------------------------------------------------------------------
-//
-// KLASSE        : CSdlPong
-// METHODE       : WriteHighScore
-//
-//
-//
-// ---------------------------------------------------------------------------
-
-void CSdlPong::WriteHighScore()
-{
-    ofstream of(GlobalSystem::getPath("hiscore.txt"));
-
-    if (of.good())
-    {
-        of << mHighScore << endl;
-        of.close();
-    }
-}
-
-
-// ---------------------------------------------------------------------------
-//
-// KLASSE        : CSdlPong
-// METHODE       : ReadHighScore
-//
-//
-//
-// ---------------------------------------------------------------------------
-
-void CSdlPong::ReadHighScore()
-{
-    ifstream infile(GlobalSystem::getPath("hiscore.txt"));
-
-    if (infile.good())
-    {
-        infile >> mHighScore;
-        infile.close();
-    }
-}
 
 // Size: 1920x960
 
@@ -861,14 +711,6 @@ void CSdlPong::Timer()
     {
         mWaitCounter--;
     }
-
-//    if (interval++ % 5 == 0) mSdlSound.PlayWav(1);
-//    else                     mSdlSound.PlayWav(0);
-
-
-
-    
-
 }
 
 

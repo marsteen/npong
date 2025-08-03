@@ -68,7 +68,6 @@ class CSdlPong : public CSdlApp
 
         //void ManageInterface(CGL_Mouse* Mouse);
         bool ParseKeys(SDL_Keycode key, bool down) override;
-        void ParseMouseRel(float xrel, float yrel) override;
         void JoystickButtonAction(int nr, int type, int jbutton) override;
 
         void LeftMouseButtonDown();
@@ -148,11 +147,22 @@ class CSdlPong : public CSdlApp
         int soundWin;
         int soundMusic;
 		
+        SGameContext mGameContext;
+        EGameStatus mGameStatus;
+        void DrawCenterPatch(CGL_Patch2d* pat,float speed, float scale, float r, float g, float b);
+
+        CGL_Patch2d mLogoTex;                       // Titelbild-Textur
+        CGL_Patch2d mWin0Tex;                       // Spieler 1 gewonnen
+        CGL_Patch2d mWin1Tex;                       // Spieler 2 gewonnen
+        CGL_Patch2d mGameOverTex;                   // "Game Over"-Textur
+        CSdlSound mSdlSound;
+        int mScore[2];
         
 		//
 		// ALT:
 		//
-		
+
+#if 0		
         void InitEnemies();
         void DrawEnemies();
         void DrawDebris();
@@ -181,7 +191,7 @@ class CSdlPong : public CSdlApp
         void RunUnits();
         bool TestCrash(CVectorUnit* vu);
         bool TestPlayerCrash();
-        void DrawCenterPatch(CGL_Patch2d* pat,float speed, float scale, float r, float g, float b);
+        
         void PlayerExplodes(int p);
         void BonusScore();
 
@@ -197,8 +207,6 @@ class CSdlPong : public CSdlApp
         void WriteHighScore();
         void ReadHighScore();
 
-        SGameContext mGameContext;
-        EGameStatus mGameStatus;
         CPlayerUnit mPlayer[2];
         int mScore[2];
         int mHighScore;
@@ -221,8 +229,9 @@ class CSdlPong : public CSdlApp
         bool mExploded;
         float mLevelDrawScale;                      // Scalierung der Levelanzeige
         int mLevelDrawWait;                         // Verzoegerung fuer Levelanzeige
-        CGL_SaveScreen mSaveScreenGL;               // Bildschirm abspeichern
+        CGL_SaveScreen mSaveScreenGL;               // Bildschirm abspeichern        
         bool mScreenSaveMode;
+#endif        
 };
 
 #endif

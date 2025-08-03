@@ -38,7 +38,6 @@ add_executable(${CMAKE_PROJECT_NAME}
 ./source/pong/CBoundingObject.cpp
 ./source/pong/CVectorShape.cpp
 ./source/pong/SShapeParams.cpp
-./source/pong/CGame_Read.cpp
 ./source/pong/CVectorUnit.cpp
 ./source/pong/CPlayerUnit.cpp
 ./source/pong/CEnemyUnit.cpp
