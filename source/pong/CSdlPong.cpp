@@ -32,7 +32,7 @@
 
 #include <cgl/CGL_include.h>
 #include <cgl/CGL_FramebufferObject.h>
-#include <vector/CVector3T.h>
+//#include <vector/CVector3T.h>
 #include <file/CFileIO.h>
 #include <tools/CException.h>
 #include <tools/CRandom.h>
@@ -74,6 +74,7 @@ CSdlPong::CSdlPong()
     mInitFlag = false;
     mShowInterface = true;
     mFullscreen = false;
+    mAnalogJoystick = true;
     mGameContext.mPlayers = 0;
     mScore[0] = mScore[1] = 0;
     mGameStatus = EGAMESTATUS_WAITING;

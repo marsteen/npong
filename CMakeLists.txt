@@ -35,17 +35,6 @@ add_executable(${CMAKE_PROJECT_NAME}
 ./source/pong/CSdlPong.cpp
 ./source/pong/CSprite.cpp
 ./source/pong/CPolylineObject.cpp
-./source/pong/CBoundingObject.cpp
-./source/pong/CVectorShape.cpp
-./source/pong/SShapeParams.cpp
-./source/pong/CVectorUnit.cpp
-./source/pong/CPlayerUnit.cpp
-./source/pong/CEnemyUnit.cpp
-./source/pong/CBaitUnit.cpp
-./source/pong/CVectorShot.cpp
-./source/pong/CExplosion.cpp
-./source/pong/CDebrisUnit.cpp
-./source/pong/CVectorObject.cpp
 ./source/file/CFileIO.cpp           
 ./source/tools/CStringTool.cpp
 ./source/tools/CRandom.cpp

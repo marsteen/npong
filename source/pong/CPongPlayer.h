@@ -21,7 +21,7 @@ class CPongPlayer
 {
     public:
 
-        CPlayerUnit() : mScore(0), mSpeed(0.0f)
+        CPongPlayer() : mScore(0), mSpeed(0.0f)
         {}
 
         int mScore;

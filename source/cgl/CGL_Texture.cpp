@@ -24,7 +24,6 @@
 
 #include <file/CFileIO.h>
 #include <tools/CRectT.h>
-#include <vector/CVector3T.h>
 #include <graflib/CPixel24.h>
 #include <graflib/CPixel32.h>
 #include <graflib/CGraflibTga.h>

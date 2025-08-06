@@ -15,7 +15,7 @@
 #ifndef CGL_Patch2d_H
 #define CGL_Patch2d_H
 
-#include <vector/CVector3T.h>
+#include <vector/CVector2.h>
 #include <cgl/CGL_Texture.h>
 
 class CGL_Patch2d : public CGL_Texture

@@ -15,7 +15,7 @@
 #ifndef CVECTOROBJECT_H
 #define CVECTOROBJECT_H
 
-#include <vector/CVector3T.h>
+#include <vector/CVector2.h>
 #include <pong/SShapeParams.h>
 
 

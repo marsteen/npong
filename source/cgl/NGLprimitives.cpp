@@ -14,7 +14,7 @@
 
 #include <cgl/CGL_include.h>
 #include <tools/CRectT.h>
-#include <vector/CVector3T.h>
+#include <vector/CVector2.h>
 
 
 //---------------------------------------------------------------------------

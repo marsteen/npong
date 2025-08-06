@@ -17,7 +17,7 @@
 
 #include <graflib/CDataRect.h>
 #include <cgl/CGL_Texture.h>
-#include <vector/CVector3T.h>
+#include <vector/CVector2.h>
 #include <tools/CRectT.h>
 
 class CSprite : public CDataRect

@@ -145,7 +145,7 @@ void CGL_Patch2d::DrawRot(float r)
 
 void CGL_Patch2d::Draw()
 {
-    CVector3<float> Vertex;
+    CVector2<float> Vertex;
 
     mHeight = mTexHeight;
     mWidth = mTexWidth;
@@ -153,37 +153,27 @@ void CGL_Patch2d::Draw()
     glEnable(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, mTexHandle);
 
-/*
- *  stringstream mstr;
- *  mstr << "CGL_Patch2d::Draw() TexHandle=" << mTexHandle;
- *  GlobalDebug(mstr);
- */
-
     glBegin(GL_TRIANGLE_STRIP);
 
     float ty = TransformY(mPos.y, mHeight);
 
     Vertex.x = mPos.x;
     Vertex.y = ty;
-    Vertex.z = 0;
     glTexCoord2f(mTexRect.left, mTexRect.top);
     glVertex3fv(Vertex.v());
 
     Vertex.x = mPos.x + mWidth;
     Vertex.y = ty;
-    Vertex.z = 0;
     glTexCoord2f(mTexRect.right, mTexRect.top);
     glVertex3fv(Vertex.v());
 
     Vertex.x = mPos.x;
     Vertex.y = ty + mHeight;
-    Vertex.z = 0;
     glTexCoord2f(mTexRect.left, mTexRect.bottom);
     glVertex3fv(Vertex.v());
 
     Vertex.x = mPos.x + mWidth;
     Vertex.y = ty + mHeight;
-    Vertex.z = 0;
     glTexCoord2f(mTexRect.right, mTexRect.bottom);
     glVertex3fv(Vertex.v());
 
@@ -298,7 +288,7 @@ void CGL_Patch2d::DrawScaled(float Scale)
 
 void CGL_Patch2d::DrawScaled(int x1, int y1, int x2, int y2)
 {
-    CVector3<float> Vertex;
+    CVector2<float> Vertex;
 
     sSwap<int>(&x1, &x2);
     sSwap<int>(&y1, &y2);
@@ -309,27 +299,23 @@ void CGL_Patch2d::DrawScaled(int x1, int y1, int x2, int y2)
 
     Vertex.x = x1;
     Vertex.y = y1;
-    Vertex.z = 0;
     glTexCoord2f(mTexRect.left, mTexRect.top);
-    glVertex3fv(Vertex.v());
+    glVertex2fv(Vertex.v());
 
     Vertex.x = x2;
     Vertex.y = y1;
-    Vertex.z = 0;
     glTexCoord2f(mTexRect.right, mTexRect.top);
-    glVertex3fv(Vertex.v());
+    glVertex2fv(Vertex.v());
 
     Vertex.x = x1;
     Vertex.y = y2;
-    Vertex.z = 0;
     glTexCoord2f(mTexRect.left, mTexRect.bottom);
-    glVertex3fv(Vertex.v());
+    glVertex2fv(Vertex.v());
 
     Vertex.x = x2;
     Vertex.y = y2;
-    Vertex.z = 0;
     glTexCoord2f(mTexRect.right, mTexRect.bottom);
-    glVertex3fv(Vertex.v());
+    glVertex2fv(Vertex.v());
 
     glEnd();
 

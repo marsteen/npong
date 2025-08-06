@@ -16,7 +16,7 @@
 #define SSHAPEPARAMS_H
 
 #include <vector>
-#include <vector/CVector3T.h>
+#include <vector/CVector2.h>
 
 struct SShapeParams
 {

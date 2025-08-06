@@ -15,9 +15,7 @@
 #ifndef CRECTT_H
 #define CRECTT_H
 
-#include <vector/CVector3T.h>
-
-
+#include <vector/CVector2.h>
 
 template<class T>
 class CRectT

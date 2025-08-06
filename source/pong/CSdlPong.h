@@ -36,6 +36,7 @@
 #include <pong/CDebrisUnit.h>
 #include <pong/CSprite.h>
 #include <pong/CPong.h>
+#include <pong/CPongPlayer.h>
 
 
 enum
@@ -135,6 +136,8 @@ class CSdlPong : public CSdlApp
         int player1dir;
         int playerSpeed;
         int players;
+
+        CPongPlayer mPongPlayer[4];
 
         float ballPosX;
         float ballPosY;
