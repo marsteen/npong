@@ -54,6 +54,7 @@ add_executable(${CMAKE_PROJECT_NAME}
 ./source/graflib/CPixel32.cpp
 ./source/global/GlobalSystemFunctions.cpp
 ./source/global/GlobalDebug.cpp
+./source/serial/CSerial.cpp
 ./source/mvpng/mv_graphics_png.c
 ./source/stb/stb_vorbis.c
 )

@@ -87,6 +87,7 @@ class CSdlPong : public CSdlApp
         void Timer() override;
         void ResetPlayers() override;
         void moveJoyAxis(int joystick, int axis, int axisValue) override;
+        void addPlayer0Pos(int n) { player0posY += n; }
 
 
     protected:
@@ -96,6 +97,7 @@ class CSdlPong : public CSdlApp
         void LoadEnvTexture(bool Anaglyph);
         void InitGame() override;
         void FinishGame() override;
+        void StartSerialThread();
 
 
         const char* mActInfobox;

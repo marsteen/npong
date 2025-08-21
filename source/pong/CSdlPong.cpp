@@ -29,6 +29,8 @@
 #include <cstdlib>
 #include <cstdio>
 #include <cmath>
+#include <thread>
+#include <atomic>
 
 #include <cgl/CGL_include.h>
 #include <cgl/CGL_FramebufferObject.h>
@@ -41,9 +43,12 @@
 #include <pong/CSdlPong.h>
 #include <pong/CPong.h>
 #include <pong/gamedefines.h>
+#include <serial/CSerial.h>
 
 using namespace std;
 
+static std::atomic<int> serialDir;
+static std::atomic<bool> serialThreadEnd;
 
 static CGL_FramebufferObject* StaticFramebufferObject;
 
@@ -187,10 +192,49 @@ void CSdlPong::InitGame()
 
     mSdlSound.StartPlaying();
     mSdlSound.PlayMusic(soundMusic, 0.5f);
+    StartSerialThread();
 
     //cout << "Loading sounds ok" << endl;
 }
 
+
+static void serialThread(CSdlPong* pongGame)
+{
+    static CSerial serial;
+    serialThreadEnd = false;
+    serial.startSerial();
+    while (!serialThreadEnd)
+    {
+    
+        const char c = serial.readChar();
+        if (c == 'A')
+        {
+            pongGame->addPlayer0Pos(25);
+        }
+        else
+        if (c == 'B')
+        {
+            pongGame->addPlayer0Pos(-25);
+        }
+    }
+}
+
+
+
+// ---------------------------------------------------------------------------
+//
+// KLASSE        : CSdlPong
+// METHODE       : StartSerialThread
+//
+//
+//
+// ---------------------------------------------------------------------------
+
+void CSdlPong::StartSerialThread()
+{
+
+    std::thread* t1 = new std::thread(serialThread, this);
+}
 
 // ---------------------------------------------------------------------------
 //
