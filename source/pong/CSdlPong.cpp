@@ -179,7 +179,7 @@ void CSdlPong::InitGame()
     soundGoal   = mSdlSound.LoadWav("files/sounds/goal.wav");
     soundWin    = mSdlSound.LoadWav("files/sounds/win.wav");
     //soundMusic  = mSdlSound.LoadOgg("files/sounds/neon-dreams.ogg");
-    soundMusic  = mSdlSound.LoadOgg("files/sounds/music-02.ogg");
+    soundMusic  = mSdlSound.LoadOgg("files/sounds/music-01.ogg");
 
     STextureParams tp;
 
