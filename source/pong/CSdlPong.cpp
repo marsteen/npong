@@ -43,7 +43,9 @@
 #include <pong/CSdlPong.h>
 #include <pong/CPong.h>
 #include <pong/gamedefines.h>
+#ifndef _WIN32
 #include <serial/CSerial.h>
+#endif
 
 using namespace std;
 
@@ -192,12 +194,15 @@ void CSdlPong::InitGame()
 
     mSdlSound.StartPlaying();
     mSdlSound.PlayMusic(soundMusic, 0.5f);
+	
+	#ifndef _WIN32
     StartSerialThread();
+	#endif
 
     //cout << "Loading sounds ok" << endl;
 }
 
-
+#ifndef _WIN32
 static void serialThread(CSdlPong* pongGame)
 {
     static CSerial serial;
@@ -235,6 +240,8 @@ void CSdlPong::StartSerialThread()
 
     std::thread* t1 = new std::thread(serialThread, this);
 }
+#endif
+
 
 // ---------------------------------------------------------------------------
 //

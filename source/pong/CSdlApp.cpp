@@ -23,6 +23,12 @@
 #include <global/GlobalSystemFunctions.h>
 #include <pong/CSdlApp.h>
 
+#ifdef _WIN32
+#include <ShellScalingAPI.h>
+#include <comdef.h>
+#endif
+
+
 extern float gGlobalLineWidth;
 extern float gGlobalScale;
 extern float gGlobalScorePos;
@@ -441,21 +447,25 @@ void CSdlApp::forceFullHD(SDL_Window* window)
 
 bool CSdlApp::InitScreen() //int xres, int yres, int Bits)
 {
-
+	#ifdef _WIN32
+    SetProcessDPIAware();
+	#endif
     SDL_DisplayMode dm;
     SDL_GetCurrentDisplayMode(0, &dm);
+	std::cout << "SDL_GetCurrentDisplayMode w=" << dm.w << " h=" << dm.h << std::endl;
+	
     mXres = dm.w;
     mYres = dm.h;
+	
+    const int windowFlags = SDL_WINDOW_OPENGL | SDL_WINDOW_FULLSCREEN_DESKTOP;
 
-    const int windowFlags = SDL_WINDOW_OPENGL | SDL_WINDOW_FULLSCREEN;
-
-    cout << "xres=" << mXres << " yres=" << mYres << " scale=" << mScale << endl;
+    //cout << "InitScreen xres=" << mXres << " yres=" << mYres << " scale=" << mScale << endl;
 
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, dm.format);
     SDL_GL_SetSwapInterval(1);
 
-    mWindow = SDL_CreateWindow("npong", 0, 0, mXres, mYres, windowFlags);
+    mWindow = SDL_CreateWindow("npong", 0, 0, 0, 0, windowFlags);
     SDL_GLContext maincontext = SDL_GL_CreateContext(mWindow);
 
     int w, h;
@@ -474,7 +484,11 @@ bool CSdlApp::InitScreen() //int xres, int yres, int Bits)
 
 
     SetResolution(mXres, mYres);
+	
+	
+	//SDL_GL_GetDrawableSize(mWindow, &w, &h);
 
+  
     InitOpenGL(mXres, mYres);
 
     // {

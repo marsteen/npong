@@ -40,7 +40,7 @@ namespace GlobalSystem
     // ---------------------------------------------------------------------------
     //
     // KLASSE        : global
-    // METHODE       : path
+    // METHODE       : getPath
     //
     //
     //
@@ -48,6 +48,7 @@ namespace GlobalSystem
 
     std::string getPath(const std::string& filename)
     {
-        return StaticAppPath + getPathDiv() + filename;
+		return filename;
+        //return StaticAppPath + getPathDiv() + filename;
     }
 }

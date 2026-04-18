@@ -57,7 +57,8 @@ void CGL_OpenGL::SetViewport(int w, int h)
 
 	cout << "CGL_OpenGL::SetViewport w=" << mWidth << " h=" << mHeight << endl;
 
-    glViewport(0, 0, mWidth * 1.6, mHeight * 1.6);
+    //glViewport(0, 0, mWidth * 1.6, mHeight * 1.6);
+	glViewport(0, 0, mWidth, mHeight);
     mAspect = (float) mWidth / (mHeight);
     //StartModelView();
 
