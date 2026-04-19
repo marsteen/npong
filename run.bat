@@ -1,0 +1,2 @@
+cd distribution
+npong.exe
